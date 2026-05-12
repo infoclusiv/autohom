@@ -23,6 +23,7 @@ from autohom_bridge.config import (
     WS_HOST,
     WS_PORT,
 )
+from autohom_bridge.observability import event_names
 
 try:
     import websockets
@@ -33,13 +34,14 @@ _LAST_ERROR_UNSET = object()
 
 
 class ILovePDFBridgeSession:
-    def __init__(self, state_manager=None):
+    def __init__(self, state_manager=None, observability=None):
         self.expected_extension_id = EXTENSION_ID
         self.expected_extension_type = EXTENSION_TYPE
         self.display_name = DISPLAY_NAME
         self.host = WS_HOST
         self.port = WS_PORT
         self.state_manager = state_manager
+        self.observability = observability
 
         self._active_ws_connection = None
         self._active_connection_meta = {
@@ -64,9 +66,42 @@ class ILovePDFBridgeSession:
 
         self._bridge_state = self._build_default_bridge_state()
         self.on_status_change = None
+        self._emit(event_names.WS_SERVER_STARTING, operation="__init__", status="started")
+
+    def _emit(self, event_name, *, operation="", level="info", status="succeeded", message="", error=None, data=None, expected=None, actual=None, **attrs):
+        if not self.observability:
+            return
+        self.observability.emit(
+            event_name,
+            component="python.ws",
+            operation=operation,
+            level=level,
+            status=status,
+            message=message,
+            error=error,
+            data=data or {},
+            expected=expected or {},
+            actual=actual or {},
+            **attrs,
+        )
+
+    @staticmethod
+    def _safe_message_envelope(payload):
+        payload = payload or {}
+        return {
+            "action": payload.get("action"),
+            "requestId": payload.get("requestId"),
+            "replyTo": payload.get("replyTo"),
+            "pdfId": payload.get("pdfId"),
+            "mappingId": payload.get("mappingId"),
+            "downloadId": payload.get("downloadId"),
+            "filename": payload.get("filename"),
+            "hasTraceId": bool(payload.get("traceId")),
+            "payloadKeys": sorted(payload.keys()),
+        }
 
     def _build_default_bridge_state(self):
-        return {
+        state = {
             "connected": False,
             "version": "",
             "status": "disconnected",
@@ -76,6 +111,8 @@ class ILovePDFBridgeSession:
             "port": self.port,
             "last_seen": 0.0,
         }
+        self._emit(event_names.WS_CONNECTION_CLOSED, operation="_build_default_bridge_state", data={"bridgeState": state})
+        return state
 
     def get_bridge_state(self):
         state = dict(self._bridge_state)
@@ -88,6 +125,7 @@ class ILovePDFBridgeSession:
         ls = float(self._bridge_state.get("last_seen") or 0.0)
         state["lastSeenSecondsAgo"] = round(time.time() - ls, 1) if ls else None
         state["recentEvents"] = self._connection_events.recent()
+        self._emit(event_names.WS_MESSAGE_RECEIVED, operation="get_bridge_state", data={"status": state.get("status"), "connected": state.get("connected")})
         return state
 
     def _log(self, msg):
@@ -114,6 +152,13 @@ class ILovePDFBridgeSession:
         if self._bridge_state["connected"]:
             self._touch_last_seen()
         self._log(f"[{self._bridge_state['status']}] {self._bridge_state['message']}")
+        self._emit(
+            event_names.WS_CONNECTION_OPENED if self._bridge_state["connected"] else event_names.WS_CONNECTION_CLOSED,
+            operation="_set_connection_status",
+            status=self._bridge_state["status"],
+            message=self._bridge_state["message"],
+            actual={"connected": self._bridge_state["connected"], "version": self._bridge_state["version"], "lastError": self._bridge_state["last_error"]},
+        )
         if self.on_status_change:
             try:
                 self.on_status_change(self.get_bridge_state())
@@ -143,6 +188,14 @@ class ILovePDFBridgeSession:
         active_ws = self._active_ws_connection
         ok, error = self._validate_extension_identity(payload)
         if not ok:
+            self._emit(
+                event_names.WS_HANDSHAKE_REJECTED,
+                operation="_accept_authenticated_connection",
+                level="warn",
+                status="rejected",
+                message=error,
+                actual={"connectionId": connection_id, "identity": self._safe_message_envelope(payload)},
+            )
             self._log_conn("auth_rejected", connection_id=connection_id, error=error)
             if websocket is active_ws or not self._extension_connected_event.is_set():
                 self._set_connection_status(connected=False, status="rejected", message=error, last_error=error)
@@ -158,6 +211,13 @@ class ILovePDFBridgeSession:
 
         if replacing and self._extension_connected_event.is_set():
             if self._same_runtime_identity(self._active_connection_meta, meta):
+                self._emit(
+                    event_names.WS_CONNECTION_DUPLICATE_REJECTED,
+                    operation="_accept_authenticated_connection",
+                    level="warn",
+                    status="rejected",
+                    actual={"connectionId": connection_id, "identity": meta},
+                )
                 self._log_conn("auth_duplicate", connection_id=connection_id)
                 await websocket.close(code=1008, reason="Duplicate active runtime")
                 return False, "duplicate"
@@ -172,6 +232,8 @@ class ILovePDFBridgeSession:
         self._active_ws_connection = websocket
         self._active_connection_meta = dict(meta)
         self._extension_connected_event.set()
+        if self.observability:
+            self.observability.active_connections[connection_id] = dict(meta)
         self._set_connection_status(
             connected=True,
             version=version,
@@ -181,6 +243,11 @@ class ILovePDFBridgeSession:
         )
 
         if prev_ws is not None:
+            self._emit(
+                event_names.WS_CONNECTION_REPLACED,
+                operation="_accept_authenticated_connection",
+                actual={"connectionId": connection_id, "identity": meta},
+            )
             self._log_conn("auth_replacing_prev", connection_id=connection_id)
             try:
                 await prev_ws.close(code=1001, reason="Replaced by newer connection")
@@ -188,11 +255,23 @@ class ILovePDFBridgeSession:
                 pass
 
         self._log_conn("auth_promoted", connection_id=connection_id, replacing=replacing)
+        self._emit(
+            event_names.WS_HANDSHAKE_ACCEPTED,
+            operation="_accept_authenticated_connection",
+            data={"connectionId": connection_id, "action": action, "identity": meta},
+        )
         return True, "promoted"
 
     async def _bootstrap_extension_connection(self, websocket, handshake_event, connection_id=""):
         try:
             self._log_conn("bootstrap_ping_sent", connection_id=connection_id)
+            self._emit(
+                event_names.WS_HANDSHAKE_PING_SENT,
+                operation="_bootstrap_extension_connection",
+                status="started",
+                data={"connectionId": connection_id},
+                expected={"nextEvent": event_names.WS_HANDSHAKE_PONG_RECEIVED, "timeoutMs": int(BOOTSTRAP_PING_TIMEOUT_S * 1000)},
+            )
             await websocket.send(json.dumps({
                 "action": "PING",
                 "source": "bootstrap",
@@ -202,10 +281,19 @@ class ILovePDFBridgeSession:
             }))
             await asyncio.wait_for(handshake_event.wait(), timeout=BOOTSTRAP_PING_TIMEOUT_S)
             self._log_conn("bootstrap_ok", connection_id=connection_id)
+            self._emit(event_names.WS_HANDSHAKE_ACCEPTED, operation="_bootstrap_extension_connection", data={"connectionId": connection_id})
         except asyncio.TimeoutError:
             if handshake_event.is_set() or websocket is self._active_ws_connection:
                 return
             if not self._extension_connected_event.is_set():
+                self._emit(
+                    event_names.WS_REQUEST_WAIT_TIMEOUT,
+                    operation="_bootstrap_extension_connection",
+                    level="warn",
+                    status="timeout",
+                    message="Handshake timeout",
+                    actual={"connectionId": connection_id},
+                )
                 self._set_connection_status(
                     connected=False,
                     status="disconnected",
@@ -235,6 +323,12 @@ class ILovePDFBridgeSession:
                     continue
 
                 self._log_conn("keepalive_ping", connection_id=connection_id, stale_s=stale)
+                self._emit(
+                    event_names.WS_KEEPALIVE_PING_SENT,
+                    operation="_keepalive_probe",
+                    status="started",
+                    data={"connectionId": connection_id, "staleSeconds": stale},
+                )
                 ok, _, _ = await asyncio.to_thread(self.ping_extension, HEARTBEAT_PING_TIMEOUT_S)
                 if ok:
                     continue
@@ -242,6 +336,13 @@ class ILovePDFBridgeSession:
                     continue
 
                 self._log_conn("keepalive_failed", connection_id=connection_id)
+                self._emit(
+                    event_names.WS_KEEPALIVE_FAILED,
+                    operation="_keepalive_probe",
+                    level="warn",
+                    status="failed",
+                    actual={"connectionId": connection_id, "staleSeconds": stale},
+                )
                 self._set_connection_status(
                     connected=False,
                     status="connected_unresponsive",
@@ -261,6 +362,12 @@ class ILovePDFBridgeSession:
         bootstrap_task = asyncio.create_task(self._bootstrap_extension_connection(websocket, handshake_event, connection_id))
         keepalive_task = None
         self._log_conn("ws_handler_start", connection_id=connection_id)
+        self._emit(
+            event_names.WS_CONNECTION_OPENED,
+            operation="ws_handler",
+            status="started",
+            data={"connectionId": connection_id},
+        )
 
         if not self._active_ws_connection or not self._extension_connected_event.is_set():
             self._set_connection_status(
@@ -271,8 +378,25 @@ class ILovePDFBridgeSession:
 
         try:
             async for message in websocket:
-                data = json.loads(message)
+                try:
+                    data = json.loads(message)
+                except json.JSONDecodeError as ex:
+                    self._emit(
+                        event_names.WS_MESSAGE_RECEIVED,
+                        operation="ws_handler.parse",
+                        level="warn",
+                        status="failed",
+                        error=ex,
+                        message="Failed to parse WebSocket payload.",
+                        actual={"connectionId": connection_id},
+                    )
+                    continue
                 action = data.get("action")
+                self._emit(
+                    event_names.WS_MESSAGE_RECEIVED,
+                    operation="ws_handler.message_received",
+                    data={"connectionId": connection_id, "message": self._safe_message_envelope(data)},
+                )
 
                 if action in ("PONG", "EXTENSION_CONNECTED"):
                     accepted, _ = await self._accept_authenticated_connection(
@@ -283,6 +407,12 @@ class ILovePDFBridgeSession:
                     )
                     if accepted:
                         handshake_event.set()
+                        if action == "PONG":
+                            self._emit(
+                                event_names.WS_HANDSHAKE_PONG_RECEIVED,
+                                operation="ws_handler.message_received",
+                                data={"connectionId": connection_id, "message": self._safe_message_envelope(data)},
+                            )
                         if websocket is self._active_ws_connection and keepalive_task is None:
                             keepalive_task = asyncio.create_task(self._keepalive_probe(websocket, connection_id))
                         if action == "PONG":
@@ -290,6 +420,13 @@ class ILovePDFBridgeSession:
                     continue
 
                 if websocket is not self._active_ws_connection:
+                    self._emit(
+                        event_names.WS_REQUEST_UNEXPECTED_RESPONSE,
+                        operation="ws_handler.stale_connection",
+                        level="warn",
+                        status="rejected",
+                        actual={"connectionId": connection_id, "message": self._safe_message_envelope(data)},
+                    )
                     continue
 
                 self._touch_last_seen()
@@ -315,6 +452,14 @@ class ILovePDFBridgeSession:
 
         except Exception as ex:
             self._log_conn("ws_handler_exception", connection_id=connection_id, error=str(ex))
+            self._emit(
+                event_names.WS_CONNECTION_CLOSED,
+                operation="ws_handler.exception",
+                level="error",
+                status="failed",
+                error=ex,
+                actual={"connectionId": connection_id},
+            )
             if websocket is self._active_ws_connection:
                 self._set_connection_status(
                     connected=False,
@@ -335,12 +480,19 @@ class ILovePDFBridgeSession:
             if is_active:
                 self._active_ws_connection = None
                 self._clear_connection_identity()
+                if self.observability:
+                    self.observability.active_connections.pop(connection_id, None)
                 self._set_connection_status(
                     connected=False,
                     version="",
                     status="disconnected",
                     message=f"Esperando reconexión de {self.display_name}.",
                 )
+            self._emit(
+                event_names.WS_CONNECTION_CLOSED,
+                operation="ws_handler.finally",
+                data={"connectionId": connection_id, "active": is_active},
+            )
 
     def _make_ws_request_id(self, prefix="py"):
         return f"{prefix}_{int(time.time() * 1000)}_{threading.get_ident()}"
@@ -368,6 +520,12 @@ class ILovePDFBridgeSession:
         payload = dict(msg_dict)
         payload.setdefault("targetExtensionType", self.expected_extension_type)
         payload.setdefault("targetExtensionId", self.expected_extension_id)
+        self._emit(
+            event_names.WS_MESSAGE_SENT,
+            operation="send_ws_msg",
+            status="started",
+            data={"message": self._safe_message_envelope(payload)},
+        )
 
         try:
             future = asyncio.run_coroutine_threadsafe(
@@ -375,10 +533,23 @@ class ILovePDFBridgeSession:
                 self._ws_loop,
             )
             future.result(timeout=3)
+            self._emit(
+                event_names.WS_MESSAGE_SENT,
+                operation="send_ws_msg",
+                data={"message": self._safe_message_envelope(payload)},
+            )
             return True
         except Exception as ex:
             self._active_ws_connection = None
             self._clear_connection_identity()
+            self._emit(
+                event_names.WS_MESSAGE_SENT,
+                operation="send_ws_msg",
+                level="error",
+                status="failed",
+                error=ex,
+                actual={"message": self._safe_message_envelope(payload)},
+            )
             self._set_connection_status(
                 connected=False,
                 status="disconnected",
@@ -393,21 +564,64 @@ class ILovePDFBridgeSession:
         request_id = str(msg_dict.get("requestId") or self._make_ws_request_id())
         payload = dict(msg_dict)
         payload["requestId"] = request_id
+        if payload.get("action") == "CONVERT_PDF" and self.observability:
+            workflow = self.observability.start_workflow("convert_pdf", component="python.ws", pdfId=payload.get("pdfId"))
+            payload.setdefault("workflowId", workflow["workflowId"])
+            payload.setdefault("traceId", workflow["traceId"])
         waiter = self._register_ws_waiter(request_id)
+        self._emit(
+            event_names.WS_REQUEST_WAIT_STARTED,
+            operation="send_ws_request_and_wait",
+            status="started",
+            requestId=request_id,
+            expected={"responseActions": list(expected_actions or []), "timeoutMs": int(timeout_s * 1000)},
+            data={"message": self._safe_message_envelope(payload)},
+        )
 
         if not self.send_ws_msg(payload):
             self._pop_ws_waiter(request_id)
+            self._emit(
+                event_names.WS_REQUEST_WAIT_TIMEOUT,
+                operation="send_ws_request_and_wait",
+                level="warn",
+                status="failed",
+                requestId=request_id,
+                message="Extension not connected.",
+            )
             return False, None, "Extension not connected."
 
         if not waiter["event"].wait(timeout_s):
             self._pop_ws_waiter(request_id)
+            self._emit(
+                event_names.WS_REQUEST_WAIT_TIMEOUT,
+                operation="send_ws_request_and_wait",
+                level="warn",
+                status="timeout",
+                requestId=request_id,
+                actual={"message": self._safe_message_envelope(payload)},
+            )
             return False, None, f"Timeout waiting for response (requestId={request_id})."
 
         data = waiter.get("payload")
         self._pop_ws_waiter(request_id)
 
         if expected_actions and (data or {}).get("action") not in set(expected_actions):
+            self._emit(
+                event_names.WS_REQUEST_UNEXPECTED_RESPONSE,
+                operation="send_ws_request_and_wait",
+                level="warn",
+                status="failed",
+                requestId=request_id,
+                expected={"responseActions": list(expected_actions)},
+                actual={"message": self._safe_message_envelope(data)},
+            )
             return False, data, "Unexpected response action."
+        self._emit(
+            event_names.WS_REQUEST_WAIT_SUCCEEDED,
+            operation="send_ws_request_and_wait",
+            requestId=request_id,
+            data={"message": self._safe_message_envelope(data)},
+        )
         return True, data, ""
 
     def ping_extension(self, timeout_s=6.0):
@@ -424,6 +638,7 @@ class ILovePDFBridgeSession:
         if websockets is None:
             err = "websockets package not installed."
             self._ws_server_error = err
+            self._emit(event_names.WS_SERVER_FAILED, operation="start_ws_server", level="error", status="failed", message=err)
             return False, err
 
         if self._ws_server_thread and self._ws_server_thread.is_alive() and self._ws_loop:
@@ -431,6 +646,12 @@ class ILovePDFBridgeSession:
 
         self._ws_server_started.clear()
         self._ws_server_error = None
+        self._emit(
+            event_names.WS_SERVER_STARTING,
+            operation="start_ws_server",
+            status="started",
+            data={"host": self.host, "port": self.port},
+        )
         self._set_connection_status(
             connected=False,
             status="listening",
@@ -456,11 +677,24 @@ class ILovePDFBridgeSession:
                         self._ws_server = server
                         self._ws_server_started.set()
                         self._log(f"WebSocket server running on ws://{self.host}:{self.port}")
+                        self._emit(
+                            event_names.WS_SERVER_STARTED,
+                            operation="start_ws_server",
+                            data={"host": self.host, "port": self.port},
+                        )
                         await self._stop_event_async.wait()
                 except Exception as ex:
                     self._ws_server_error = str(ex)
                     self._ws_server_started.set()
                     self._log(f"Server startup error: {ex}")
+                    self._emit(
+                        event_names.WS_SERVER_FAILED,
+                        operation="start_ws_server",
+                        level="error",
+                        status="failed",
+                        error=ex,
+                        data={"host": self.host, "port": self.port},
+                    )
                 finally:
                     self._ws_server = None
 
@@ -482,6 +716,7 @@ class ILovePDFBridgeSession:
     def stop_ws_server(self, timeout_s=5.0):
         if not self._ws_loop or not self._stop_event_async:
             return
+        self._emit(event_names.WS_CONNECTION_CLOSED, operation="stop_ws_server", status="started")
         try:
             self._ws_loop.call_soon_threadsafe(self._stop_event_async.set)
         except Exception:

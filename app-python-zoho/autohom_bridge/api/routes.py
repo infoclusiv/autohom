@@ -7,6 +7,7 @@ from aiohttp import web
 
 from autohom_bridge.api.folder_dialog import open_native_folder_dialog
 from autohom_bridge.api.serializers import error_response, ok_response
+from autohom_bridge.observability.exporter import DiagnosticExporter
 from autohom_bridge.services.pdf_service import PdfService
 
 
@@ -121,7 +122,11 @@ async def handle_scan(request):
 
 
 async def handle_bridge_state(request):
-    return ok_response(bridge=request.app["bridge_session"].get_bridge_state())
+    bridge_state = request.app["bridge_session"].get_bridge_state()
+    observability = request.app.get("observability")
+    if observability:
+        observability.snapshot_state(bridge_state)
+    return ok_response(bridge=bridge_state)
 
 
 async def handle_register_local_pdf(request):
@@ -176,3 +181,80 @@ async def handle_finalize_download(request):
         return error_response(str(ex), status=500, code="DOWNLOAD_FINALIZE_FAILED")
 
     return ok_response(**result)
+
+
+async def handle_observability_state(request):
+    observability = request.app.get("observability")
+    bridge_state = request.app["bridge_session"].get_bridge_state()
+    if not observability:
+        return ok_response(runId="", activeWorkflows=[], activeExtensionConnections={}, ringBufferCounts={})
+    observability.snapshot_state(bridge_state)
+    return ok_response(**observability.get_state(), bridgeState=bridge_state)
+
+
+async def handle_observability_recent_events(request):
+    observability = request.app.get("observability")
+    if not observability:
+        return ok_response(events=[])
+    try:
+        limit = int(request.query.get("limit", "100"))
+    except ValueError:
+        limit = 100
+    return ok_response(events=observability.recent_events(limit), errors=observability.recent_errors(min(limit, 20)))
+
+
+async def handle_observability_events(request):
+    observability = request.app.get("observability")
+    if not observability:
+        return error_response("Observability service not available", status=503)
+    try:
+        body = request.get("json_body")
+        if body is None:
+            body = await request.json()
+    except Exception:
+        return error_response("Invalid JSON")
+    event = observability.ingest_external_event(body)
+    return ok_response(event=event)
+
+
+async def handle_export_observability(request):
+    observability = request.app.get("observability")
+    if not observability:
+        return error_response("Observability service not available", status=503)
+    try:
+        body = request.get("json_body")
+        if body is None and request.can_read_body:
+            body = await request.json()
+        if body is None:
+            body = {}
+    except Exception:
+        body = {}
+    exporter = DiagnosticExporter(observability, request.app["bridge_session"])
+    result = exporter.export(
+        scope=body.get("scope", "latest"),
+        workflow_id=body.get("workflowId"),
+        max_events=int(body.get("maxEvents", 500)),
+        include_browser_events=bool(body.get("includeBrowserEvents", True)),
+        include_debug_prompt=bool(body.get("includeDebugPrompt", True)),
+        redaction_level=body.get("redactionLevel", "standard"),
+    )
+    return ok_response(**result)
+
+
+async def handle_export_download(request):
+    observability = request.app.get("observability")
+    if not observability:
+        return error_response("Observability service not available", status=503)
+    package_id = request.match_info["package_id"]
+    exporter = DiagnosticExporter(observability, request.app["bridge_session"])
+    package = exporter.get_package(package_id)
+    if not package or not os.path.isfile(package["zipPath"]):
+        return error_response("Diagnostic package not found", status=404)
+    return web.FileResponse(
+        package["zipPath"],
+        headers={
+            "Content-Type": "application/zip",
+            "Content-Disposition": f'attachment; filename="{package["zipName"]}"',
+            "Access-Control-Allow-Origin": "*",
+        },
+    )
