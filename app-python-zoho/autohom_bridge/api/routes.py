@@ -122,3 +122,57 @@ async def handle_scan(request):
 
 async def handle_bridge_state(request):
     return ok_response(bridge=request.app["bridge_session"].get_bridge_state())
+
+
+async def handle_register_local_pdf(request):
+    try:
+        body = await request.json()
+    except Exception:
+        return error_response("Invalid JSON")
+
+    service = PdfService(request.app["state_manager"])
+    try:
+        pdf = await asyncio.to_thread(
+            service.register_local_pdf,
+            body.get("path"),
+            source=body.get("source", "acta-mapping"),
+            mapping_id=body.get("mappingId"),
+            zoho_url=body.get("zohoUrl"),
+            requested_output_directory=body.get("requestedOutputDirectory"),
+            trace_id=body.get("traceId"),
+        )
+    except FileNotFoundError as ex:
+        return error_response(str(ex), status=404, code="PDF_PATH_NOT_FOUND")
+    except PermissionError as ex:
+        return error_response(str(ex), status=403, code="PDF_PATH_NOT_READABLE")
+    except ValueError as ex:
+        return error_response(str(ex), status=400, code="PDF_PATH_INVALID")
+
+    return ok_response(pdf=pdf)
+
+
+async def handle_finalize_download(request):
+    try:
+        body = await request.json()
+    except Exception:
+        return error_response("Invalid JSON")
+
+    service = PdfService(request.app["state_manager"])
+    try:
+        result = await asyncio.to_thread(
+            service.finalize_download,
+            downloaded_file_path=body.get("downloadedFilePath"),
+            target_directory=body.get("targetDirectory"),
+            source_pdf_path=body.get("sourcePdfPath"),
+            original_pdf_filename=body.get("originalPdfFilename"),
+        )
+    except FileNotFoundError as ex:
+        return error_response(str(ex), status=404, code="DOWNLOADED_FILE_NOT_FOUND")
+    except PermissionError as ex:
+        return error_response(str(ex), status=403, code="DOWNLOAD_MOVE_NOT_ALLOWED")
+    except ValueError as ex:
+        return error_response(str(ex), status=400, code="DOWNLOAD_FINALIZE_INVALID")
+    except OSError as ex:
+        return error_response(str(ex), status=500, code="DOWNLOAD_FINALIZE_FAILED")
+
+    return ok_response(**result)

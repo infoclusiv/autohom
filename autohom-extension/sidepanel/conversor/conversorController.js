@@ -21,9 +21,7 @@ window.AutohomConversor = (() => {
         chrome.storage.local.set({ ilovepdf_last_folder: data.current_folder });
         return;
       }
-    } catch (error) {
-      // Python app may be down; fall back to cached folder below.
-    }
+    } catch (_error) {}
 
     chrome.storage.local.get('ilovepdf_last_folder', (result) => {
       if (result.ilovepdf_last_folder) {
@@ -115,17 +113,30 @@ window.AutohomConversor = (() => {
         window.AutohomConversorRender.renderPdfList();
         window.AutohomConversorRender.updateStats();
       }
-    } catch (error) {
+    } catch (_error) {
       if (!silent) {
         throw new Error('No se pudo conectar con la app Python. Verifica que esté iniciada.');
       }
     }
   }
 
-  function convertOne(pdfId, filename) {
-    chrome.runtime.sendMessage({ type: 'ILOVEPDF_CONVERT', pdfId, filename });
-    window.AutohomLogs.append(`🔄 Enviado a convertir: ${filename}`);
-    window.AutohomToast.show(`🔄 Convirtiendo ${filename}...`);
+  function convertOne(pdfOrId, maybeFilename) {
+    const descriptor = typeof pdfOrId === 'object'
+      ? pdfOrId
+      : { pdfId: pdfOrId, filename: maybeFilename };
+
+    chrome.runtime.sendMessage({
+      type: 'ILOVEPDF_CONVERT',
+      pdfId: descriptor.pdfId,
+      filename: descriptor.filename,
+      source: descriptor.source || 'conversor-scan',
+      mappingId: descriptor.mappingId || null,
+      outputDirectory: descriptor.outputDirectory || null,
+      sourcePdfPath: descriptor.sourcePdfPath || null,
+      traceId: descriptor.traceId || null,
+    });
+    window.AutohomLogs.append(`🔄 Enviado a convertir: ${descriptor.filename}`);
+    window.AutohomToast.show(`🔄 Convirtiendo ${descriptor.filename}...`);
   }
 
   function convertAll() {
@@ -162,7 +173,7 @@ window.AutohomConversor = (() => {
     }
   }
 
-  function handleProgress(message) {
+  async function handleProgress(message) {
     const { pdfId, status, message: detail } = message;
     const short = pdfId?.substring(0, 8) || '?';
     const icon = {
@@ -170,6 +181,7 @@ window.AutohomConversor = (() => {
       uploading: '📤',
       converting: '🔄',
       downloading: '⬇️',
+      finalizing: '💾',
       completed: '✅',
       error: '❌',
     }[status] || '•';
@@ -184,13 +196,31 @@ window.AutohomConversor = (() => {
       window.AutohomConversorRender.updateStats();
     }
 
-    const mappingId = window.AutohomActasStore.getActaConversion(pdfId);
+    const mappingLink = window.AutohomActasStore.getActaConversion(pdfId);
+    const mappingId = mappingLink?.mappingId || message.mappingId || null;
     if (mappingId) {
       window.AutohomActas.updateMappingConversionStatus(
         mappingId,
         status,
-        status === 'error' && detail ? `Error: ${detail}` : ''
+        status === 'error' && detail ? `Error: ${detail}` : '',
+        message.finalExcelPath ? { finalExcelPath: message.finalExcelPath } : {}
       );
+      if (status === 'completed') {
+        await window.AutohomActasStore.updateMappingConversion(mappingId, {
+          lastStatus: 'completed',
+          lastPdfId: pdfId,
+          lastExcelPath: message.finalExcelPath || '',
+          lastError: null,
+        });
+      }
+      if (status === 'error') {
+        await window.AutohomActasStore.updateMappingConversion(mappingId, {
+          lastStatus: 'error',
+          lastPdfId: pdfId,
+          lastExcelPath: '',
+          lastError: detail || 'Error desconocido',
+        });
+      }
       if (status === 'completed' || status === 'error') {
         window.AutohomActasStore.clearActaConversion(pdfId);
       }

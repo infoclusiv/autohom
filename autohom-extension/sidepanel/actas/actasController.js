@@ -79,8 +79,8 @@ window.AutohomActas = (() => {
     window.AutohomToast.show('🗑️ Registros de Actas limpiados');
   }
 
-  function updateMappingConversionStatus(mappingId, status, message = '') {
-    window.AutohomActasRender.updateMappingConversionStatus(mappingId, status, message);
+  function updateMappingConversionStatus(mappingId, status, message = '', options = {}) {
+    window.AutohomActasRender.updateMappingConversionStatus(mappingId, status, message, options);
   }
 
   async function convertMapping(mapping, card) {

@@ -34,11 +34,20 @@ window.AutohomConversorApi = (() => {
     return await readJson(`${API_BASE}/pdfs/clear`, { method: 'POST' });
   }
 
+  async function registerLocalPdf(payload) {
+    return await readJson(`${API_BASE}/pdfs/register-local`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  }
+
   return {
     getConfig,
     setConfig,
     openFolderDialog,
     listPdfs,
     clearPdfs,
+    registerLocalPdf,
   };
 })();

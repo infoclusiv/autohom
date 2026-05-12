@@ -1,11 +1,9 @@
 /**
- * ilovepdf-background/router.js — Message router for iLovePDF messages.
- *
- * Extends the Chrome runtime message listener for ILOVEPDF_* message types.
+ * ilovepdf-background/router.js - Message router for iLovePDF messages.
  */
 
 function persistSelectorAlert(alert) {
-  chrome.storage.local.get("ilovepdf_selector_alerts", (result) => {
+  chrome.storage.local.get('ilovepdf_selector_alerts', (result) => {
     const existing = Array.isArray(result.ilovepdf_selector_alerts)
       ? result.ilovepdf_selector_alerts
       : [];
@@ -18,23 +16,28 @@ function persistSelectorAlert(alert) {
 (function registerILovePDFRouter() {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.type) {
-      case "ILOVEPDF_CONVERT": {
+      case 'ILOVEPDF_CONVERT': {
         ILovePDFRuntime.queueConversion({
           pdfId: message.pdfId,
           filename: message.filename,
+          source: message.source || 'conversor-scan',
+          mappingId: message.mappingId || null,
+          outputDirectory: message.outputDirectory || null,
+          sourcePdfPath: message.sourcePdfPath || null,
+          traceId: message.traceId || null,
         });
         sendResponse({ ok: true, queued: true });
         return false;
       }
 
-      case "ILOVEPDF_CONVERT_ALL": {
+      case 'ILOVEPDF_CONVERT_ALL': {
         const pdfList = Array.isArray(message.pdfs) ? message.pdfs : [];
         ILovePDFRuntime.queueAll(pdfList);
         sendResponse({ ok: true, queued: pdfList.length });
         return false;
       }
 
-      case "ILOVEPDF_STATUS": {
+      case 'ILOVEPDF_STATUS': {
         sendResponse({
           ok: true,
           runtime: ILovePDFRuntime.getState(),
@@ -43,32 +46,35 @@ function persistSelectorAlert(alert) {
         return false;
       }
 
-      case "ILOVEPDF_CONVERSION_RESULT": {
-        // Forward from content script to bridge + side panel
+      case 'ILOVEPDF_CONVERSION_RESULT': {
         const { pdfId, status, message: msg } = message;
 
-        if (status === "completed") {
-          ILovePDFUtils.log("info", "[Router] content.completed_ignored", {
+        if (status === 'completed') {
+          ILovePDFUtils.log('info', '[Router] content.completed_ignored', {
             pdfId,
             message: msg,
           });
           return false;
         }
 
-        if (status === "error") {
-          ILovePDFDownloadTracker.failIfTracking(pdfId, msg || "Content script reported a phase 2 error.");
+        if (status === 'error') {
+          ILovePDFDownloadTracker.failIfTracking(pdfId, msg || 'Content script reported a phase 2 error.');
         }
 
         ILovePDFBridge.sendStatus(pdfId, status, msg);
-        // Forward to side panel
         chrome.runtime.sendMessage({
-          type: "ILOVEPDF_PROGRESS",
-          pdfId, status, message: msg,
+          type: 'ILOVEPDF_PROGRESS',
+          pdfId,
+          status,
+          message: msg,
+          source: message.source || null,
+          mappingId: message.mappingId || null,
+          traceId: message.traceId || null,
         }).catch(() => {});
         return false;
       }
 
-      case "ILOVEPDF_ENSURE_BRIDGE": {
+      case 'ILOVEPDF_ENSURE_BRIDGE': {
         if (!ILovePDFBridge.isConnected()) {
           ILovePDFBridge.connect();
         }
@@ -76,9 +82,9 @@ function persistSelectorAlert(alert) {
         return false;
       }
 
-      case "ILOVEPDF_SELECTOR_FALLBACK": {
+      case 'ILOVEPDF_SELECTOR_FALLBACK': {
         const alert = {
-          level: "warning",
+          level: 'warning',
           selectorName: message.selectorName,
           configuredSelector: message.configuredSelector,
           usedStrategy: message.usedStrategy,
@@ -86,7 +92,7 @@ function persistSelectorAlert(alert) {
           timestamp: Date.now(),
         };
 
-        ILovePDFUtils.log("warn", "[Router] selector.fallback", {
+        ILovePDFUtils.log('warn', '[Router] selector.fallback', {
           selectorName: message.selectorName,
           configured: message.configuredSelector,
           usedStrategy: message.usedStrategy,
@@ -94,7 +100,7 @@ function persistSelectorAlert(alert) {
         });
 
         chrome.runtime.sendMessage({
-          type: "ILOVEPDF_SELECTOR_ALERT",
+          type: 'ILOVEPDF_SELECTOR_ALERT',
           ...alert,
         }).catch(() => {});
 
@@ -103,9 +109,9 @@ function persistSelectorAlert(alert) {
         return false;
       }
 
-      case "ILOVEPDF_SELECTOR_BROKEN": {
+      case 'ILOVEPDF_SELECTOR_BROKEN': {
         const alert = {
-          level: "error",
+          level: 'error',
           selectorName: message.selectorName,
           configuredSelector: message.configuredSelector,
           usedStrategy: null,
@@ -113,14 +119,14 @@ function persistSelectorAlert(alert) {
           timestamp: Date.now(),
         };
 
-        ILovePDFUtils.log("error", "[Router] selector.broken", {
+        ILovePDFUtils.log('error', '[Router] selector.broken', {
           selectorName: message.selectorName,
           configured: message.configuredSelector,
           url: message.url,
         });
 
         chrome.runtime.sendMessage({
-          type: "ILOVEPDF_SELECTOR_ALERT",
+          type: 'ILOVEPDF_SELECTOR_ALERT',
           ...alert,
         }).catch(() => {});
 

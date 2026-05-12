@@ -52,3 +52,12 @@ def test_persists_to_disk(tmp_path):
     manager.set_current_folder("C:/persist")
     data = json.loads(state_file.read_text(encoding="utf-8"))
     assert data["current_folder"] == "C:/persist"
+
+
+def test_make_pdf_id_uses_path_metadata_when_available(tmp_path):
+    pdf_path = tmp_path / "sample.pdf"
+    pdf_path.write_text("data", encoding="utf-8")
+    first = StateManager.make_pdf_id(pdf_path)
+    second = StateManager.make_pdf_id(pdf_path)
+    assert first == second
+    assert len(first) == 16

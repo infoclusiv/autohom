@@ -3,14 +3,15 @@
 
 try {
   importScripts(
-    "background-zoho.js",                // Zoho CRM — código original sin cambios
-    "ilovepdf/config.js",                 // Site profile + config iLovePDF
-    "ilovepdf/utils.js",                  // Utilidades compartidas
-    "ilovepdf-background/bridge.js",      // WebSocket bridge client
-    "ilovepdf-background/tabManager.js",  // Tab management iLovePDF
-    "ilovepdf-background/downloadTracker.js", // Confirmación real vía chrome.downloads
-    "ilovepdf-background/runtime.js",     // Conversion runtime (cola secuencial)
-    "ilovepdf-background/router.js"       // Message router iLovePDF
+    "background-zoho.js",
+    "ilovepdf/config.js",
+    "ilovepdf/utils.js",
+    "ilovepdf-background/bridge.js",
+    "ilovepdf-background/tabManager.js",
+    "ilovepdf-background/downloadTracker.js",
+    "ilovepdf-background/finalizer.js",
+    "ilovepdf-background/runtime.js",
+    "ilovepdf-background/router.js"
   );
 } catch (e) {
   console.error("[iLovePDF] Bootstrap importScripts error:", e);

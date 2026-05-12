@@ -29,3 +29,39 @@ def test_clear_pdfs(tmp_path):
     payload = service.clear_pdfs()
     assert payload["pdfs"] == []
     assert payload["count"] == 0
+
+
+def test_register_local_pdf(tmp_path):
+    pdf_path = tmp_path / "doc.pdf"
+    pdf_path.write_text("x", encoding="utf-8")
+    service = make_service(tmp_path)
+
+    saved = service.register_local_pdf(
+        str(pdf_path),
+        mapping_id=123,
+        zoho_url="https://crm.zoho.com/crm/org/tab/Cases/1",
+        requested_output_directory=str(tmp_path),
+        trace_id="trace-1",
+    )
+
+    assert saved["filepath"] == str(pdf_path.resolve())
+    assert saved["mappingId"] == 123
+    assert saved["requestedOutputDirectory"] == str(tmp_path.resolve())
+    assert saved["traceId"] == "trace-1"
+
+
+def test_finalize_download_moves_and_suffixes_excel(tmp_path):
+    service = make_service(tmp_path)
+    downloaded = tmp_path / "downloaded.xlsx"
+    downloaded.write_text("sheet", encoding="utf-8")
+    existing = tmp_path / "Acta.xlsx"
+    existing.write_text("old", encoding="utf-8")
+
+    result = service.finalize_download(
+        downloaded_file_path=str(downloaded),
+        target_directory=str(tmp_path),
+        original_pdf_filename="Acta.pdf",
+    )
+
+    assert result["moved"] is True
+    assert result["excelPath"].endswith("Acta (1).xlsx")
