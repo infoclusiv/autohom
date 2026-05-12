@@ -7,6 +7,8 @@ import threading
 import time
 
 from autohom_bridge.config import STATE_FILE
+from autohom_bridge.observability import event_names
+from autohom_bridge.observability.logger import get_observability
 
 
 class StateManager:
@@ -19,24 +21,46 @@ class StateManager:
 
     def _load(self):
         if not os.path.exists(self._state_file):
+            self._emit(event_names.STATE_LOADED, data={"stateFile": self._state_file, "exists": False})
             return {"current_folder": "", "pdfs": {}}
         try:
             with open(self._state_file, "r", encoding="utf-8") as file:
                 data = json.load(file)
             if not isinstance(data, dict):
+                self._emit(event_names.STATE_LOAD_FAILED, level="warn", status="failed", message="State file did not contain a dict.")
                 return {"current_folder": "", "pdfs": {}}
             data.setdefault("current_folder", "")
             data.setdefault("pdfs", {})
+            self._emit(event_names.STATE_LOADED, data={"stateFile": self._state_file, "pdfCount": len(data.get("pdfs", {}))})
             return data
-        except (json.JSONDecodeError, OSError):
+        except (json.JSONDecodeError, OSError) as ex:
+            self._emit(event_names.STATE_LOAD_FAILED, level="error", status="failed", message=str(ex), error=ex)
             return {"current_folder": "", "pdfs": {}}
 
     def _save(self):
         try:
             with open(self._state_file, "w", encoding="utf-8") as file:
                 json.dump(self._state, file, ensure_ascii=False, indent=2)
+            self._emit(event_names.STATE_SAVED, data={"stateFile": self._state_file, "pdfCount": len(self._state.get("pdfs", {}))})
         except OSError as ex:
             print(f"[StateManager] Error saving state: {ex}")
+            self._emit(event_names.STATE_SAVE_FAILED, level="error", status="failed", message=str(ex), error=ex)
+
+    def _emit(self, event_name, *, level="info", status="succeeded", message="", error=None, data=None, actual=None):
+        obs = get_observability()
+        if not obs:
+            return
+        obs.emit(
+            event_name,
+            component="python.state",
+            operation="state_manager",
+            level=level,
+            status=status,
+            message=message,
+            error=error,
+            data=data or {},
+            actual=actual or {},
+        )
 
     @staticmethod
     def make_pdf_id(filepath):
@@ -54,8 +78,13 @@ class StateManager:
 
     def set_current_folder(self, folder_path):
         with self._lock:
+            previous = self._state.get("current_folder", "")
             self._state["current_folder"] = str(folder_path or "").strip()
             self._save()
+            self._emit(
+                event_names.STATE_FOLDER_CHANGED,
+                data={"previousFolder": previous, "currentFolder": self._state["current_folder"]},
+            )
 
     def get_all_pdfs(self):
         with self._lock:
@@ -71,18 +100,33 @@ class StateManager:
             existing.update(pdf_data)
             self._state["pdfs"][pdf_id] = existing
             self._save()
+            self._emit(
+                event_names.STATE_PDF_UPSERTED,
+                data={"pdfId": pdf_id, "filename": existing.get("filename"), "status": existing.get("status")},
+            )
             return dict(existing)
 
     def set_pdf_status(self, pdf_id, status, message=""):
         with self._lock:
             pdf = self._state["pdfs"].get(pdf_id)
             if pdf is None:
+                self._emit(
+                    event_names.STATE_PDF_MISSING,
+                    level="warn",
+                    status="failed",
+                    data={"pdfId": pdf_id, "requestedStatus": status},
+                )
                 return False
+            previous_status = pdf.get("status", "")
             pdf["status"] = status
             pdf["message"] = message or ""
             if status == "completed":
                 pdf["converted_at"] = time.time()
             self._save()
+            self._emit(
+                event_names.STATE_PDF_STATUS_TRANSITION,
+                data={"pdfId": pdf_id, "from": previous_status, "to": status, "message": message or ""},
+            )
             return True
 
     def merge_scanned_pdfs(self, scanned_pdfs):
@@ -119,6 +163,12 @@ class StateManager:
                     existing[pdf_id]["status"] = "missing"
                     existing[pdf_id]["message"] = ""
                     existing[pdf_id]["converted_at"] = None
+                    self._emit(
+                        event_names.STATE_PDF_MISSING,
+                        level="warn",
+                        status="failed",
+                        data={"pdfId": pdf_id, "filename": existing[pdf_id].get("filename")},
+                    )
 
             self._state["pdfs"] = existing
             self._save()
