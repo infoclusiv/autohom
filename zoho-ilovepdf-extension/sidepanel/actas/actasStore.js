@@ -1,14 +1,27 @@
 window.AutohomActasStore = (() => {
   const state = window.AutohomSidepanelState;
+  const ACTIVE_CONVERSION_STATUSES = new Set([
+    'preparing',
+    'registering',
+    'queued',
+    'starting',
+    'uploading',
+    'converting',
+    'downloading',
+    'finalizing',
+  ]);
 
   function normalizeMapping(mapping) {
     const sourcePdf = mapping?.sourcePdf || null;
     const conversion = mapping?.conversion || {};
+    const lastStatus = ACTIVE_CONVERSION_STATUSES.has(conversion.lastStatus)
+      ? 'idle'
+      : (conversion.lastStatus || 'idle');
     return {
       ...mapping,
       sourcePdf,
       conversion: {
-        lastStatus: conversion.lastStatus || 'idle',
+        lastStatus,
         lastPdfId: conversion.lastPdfId || null,
         lastExcelPath: conversion.lastExcelPath || null,
         lastError: conversion.lastError || null,

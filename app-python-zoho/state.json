@@ -17,6 +17,40 @@
       "sizeBytes": 173246,
       "modifiedAt": 1778615671,
       "traceId": "acta-1778615673244-1778615676252"
+    },
+    "941293e11dd7ffa0": {
+      "id": "941293e11dd7ffa0",
+      "filename": "HENDRY JULIETTE GONZALEZ MOLANO ACTA CORREGIDA.pdf",
+      "filepath": "C:\\Users\\carlos.medinac\\Downloads\\HENDRY JULIETTE GONZALEZ MOLANO ACTA CORREGIDA.pdf",
+      "status": "completed",
+      "message": "HENDRY JULIETTE GONZALEZ MOLANO ACTA CORREGIDA.pdf convertido exitosamente.",
+      "created_at": 1778618042.5068417,
+      "converted_at": 1778618054.478795,
+      "source": "acta-mapping",
+      "mappingId": 1778618012986,
+      "zohoUrl": "https://crm.zoho.com/crm/org667027250/tab/Cases/3229357002316383082",
+      "requestedOutputDirectory": "C:\\Users\\carlos.medinac\\Downloads",
+      "directory": "C:\\Users\\carlos.medinac\\Downloads",
+      "sizeBytes": 173246,
+      "modifiedAt": 1778618011,
+      "traceId": "acta-batch-1778618012986-1778618042490"
+    },
+    "a6ca1c6d59c9ccc1": {
+      "id": "a6ca1c6d59c9ccc1",
+      "filename": "RTA. KAREN DANIELA DELGADO PINEDA-HOMOLOGACION.pdf",
+      "filepath": "C:\\Users\\carlos.medinac\\Downloads\\RTA. KAREN DANIELA DELGADO PINEDA-HOMOLOGACION.pdf",
+      "status": "completed",
+      "message": "RTA. KAREN DANIELA DELGADO PINEDA-HOMOLOGACION.pdf convertido exitosamente.",
+      "created_at": 1778618042.5233927,
+      "converted_at": 1778618086.4260807,
+      "source": "acta-mapping",
+      "mappingId": 1778618004723,
+      "zohoUrl": "https://crm.zoho.com/crm/org667027250/tab/Cases/3229357002805345824",
+      "requestedOutputDirectory": "C:\\Users\\carlos.medinac\\Downloads",
+      "directory": "C:\\Users\\carlos.medinac\\Downloads",
+      "sizeBytes": 532039,
+      "modifiedAt": 1778618003,
+      "traceId": "acta-batch-1778618004723-1778618042519"
     }
   }
 }

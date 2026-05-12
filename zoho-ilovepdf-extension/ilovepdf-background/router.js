@@ -25,6 +25,7 @@ function persistSelectorAlert(alert) {
           outputDirectory: message.outputDirectory || null,
           sourcePdfPath: message.sourcePdfPath || null,
           traceId: message.traceId || null,
+          batchId: message.batchId || null,
         });
         sendResponse({ ok: true, queued: true });
         return false;
@@ -70,6 +71,7 @@ function persistSelectorAlert(alert) {
           source: message.source || null,
           mappingId: message.mappingId || null,
           traceId: message.traceId || null,
+          batchId: message.batchId || null,
         }).catch(() => {});
         return false;
       }

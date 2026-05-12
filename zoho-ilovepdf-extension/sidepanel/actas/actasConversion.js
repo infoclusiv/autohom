@@ -1,4 +1,8 @@
 window.AutohomActasConversion = (() => {
+  function buildTraceId(mapping, mode = 'single') {
+    return `acta-${mode}-${mapping.id}-${Date.now()}`;
+  }
+
   function normalizeFilename(filename) {
     return String(filename || '')
       .split('/')
@@ -25,10 +29,6 @@ window.AutohomActasConversion = (() => {
       return { __ambiguous: true, matches: exact };
     }
     return null;
-  }
-
-  function buildTraceId(mapping) {
-    return `acta-${mapping.id}-${Date.now()}`;
   }
 
   async function resolveLegacySourcePdf(mapping) {
@@ -72,7 +72,7 @@ window.AutohomActasConversion = (() => {
     }
 
     throw new Error(
-      'Este mapeo no tiene ruta local del PDF. Fue creado antes de esta versión o no se pudo capturar la ruta.'
+      'Este mapeo no tiene ruta local del PDF. Fue creado antes de esta version o no se pudo capturar la ruta.'
     );
   }
 
@@ -93,56 +93,108 @@ window.AutohomActasConversion = (() => {
     return response.pdf;
   }
 
+  async function ensureBridgeReady() {
+    const bridgeStatus = await window.AutohomChromeMessages.sendRuntimeMessage({
+      type: 'ILOVEPDF_STATUS',
+    });
+    if (!bridgeStatus?.ok || !bridgeStatus.bridgeConnected) {
+      return {
+        ok: false,
+        error: 'El bridge con iLovePDF no esta conectado. Inicia la app Python y vuelve a intentarlo.',
+      };
+    }
+    return { ok: true };
+  }
+
+  async function prepareMappingConversion(mapping, options = {}) {
+    const batchId = options.batchId || null;
+    const traceId = options.traceId || buildTraceId(mapping, batchId ? 'batch' : 'single');
+
+    window.AutohomActasRender.updateMappingConversionStatus(mapping.id, 'preparing');
+    await window.AutohomActasStore.updateMappingConversion(mapping.id, {
+      lastStatus: 'preparing',
+      lastError: null,
+    });
+
+    const sourcePdf = await getSourcePdfForMapping(mapping);
+    window.AutohomLogs.append(
+      `acta.convert.mapping_path.checked trace=${traceId} path=${sourcePdf.absolutePath}`
+    );
+
+    window.AutohomActasRender.updateMappingConversionStatus(mapping.id, 'registering');
+    await window.AutohomActasStore.updateMappingConversion(mapping.id, {
+      lastStatus: 'registering',
+      lastError: null,
+    });
+
+    const pdf = await resolveMappedPdf(mapping, sourcePdf, traceId);
+    window.AutohomLogs.append(
+      `acta.convert.local_pdf.register.success trace=${traceId} pdfId=${pdf.id}`
+    );
+
+    window.AutohomActasStore.setActaConversion(pdf.id, {
+      mappingId: mapping.id,
+      source: 'acta-mapping',
+      traceId,
+      batchId,
+    });
+
+    return {
+      pdfId: pdf.id,
+      filename: pdf.filename,
+      source: 'acta-mapping',
+      mappingId: mapping.id,
+      outputDirectory: sourcePdf.directory,
+      sourcePdfPath: sourcePdf.absolutePath,
+      traceId,
+      batchId,
+    };
+  }
+
   async function convertMapping(mapping, card) {
     const button = card.querySelector('.btn-convert-mapping');
-    const traceId = buildTraceId(mapping);
+    const traceId = buildTraceId(mapping, 'single');
 
     try {
       button.disabled = true;
-      window.AutohomLogs.append(`🧭 acta.convert.clicked trace=${traceId} mapping=${mapping.id}`);
-      window.AutohomActasRender.updateMappingConversionStatus(mapping.id, 'preparing');
+      window.AutohomLogs.append(`acta.convert.clicked trace=${traceId} mapping=${mapping.id}`);
 
-      const bridgeStatus = await window.AutohomChromeMessages.sendRuntimeMessage({ type: 'ILOVEPDF_STATUS' });
-      if (!bridgeStatus?.ok || !bridgeStatus.bridgeConnected) {
-        throw new Error('El bridge con iLovePDF no está conectado. Inicia la app Python y vuelve a intentarlo.');
+      const bridgeStatus = await ensureBridgeReady();
+      if (!bridgeStatus.ok) {
+        throw new Error(bridgeStatus.error);
       }
 
-      const sourcePdf = await getSourcePdfForMapping(mapping);
-      window.AutohomLogs.append(
-        `📍 acta.convert.mapping_path.checked trace=${traceId} path=${sourcePdf.absolutePath}`
-      );
-      window.AutohomActasRender.updateMappingConversionStatus(mapping.id, 'registering');
-
-      const pdf = await resolveMappedPdf(mapping, sourcePdf, traceId);
-      window.AutohomLogs.append(`🧩 acta.convert.local_pdf.register.success trace=${traceId} pdfId=${pdf.id}`);
-
-      window.AutohomActasStore.setActaConversion(pdf.id, {
-        mappingId: mapping.id,
-        source: 'acta-mapping',
-        traceId,
+      const descriptor = await prepareMappingConversion(mapping, { traceId });
+      await window.AutohomActasStore.updateMappingConversion(mapping.id, {
+        lastStatus: 'queued',
+        lastPdfId: descriptor.pdfId,
+        lastExcelPath: '',
+        lastError: null,
       });
-      window.AutohomConversor.convertOne({
-        pdfId: pdf.id,
-        filename: pdf.filename,
-        source: 'acta-mapping',
-        mappingId: mapping.id,
-        outputDirectory: sourcePdf.directory,
-        sourcePdfPath: sourcePdf.absolutePath,
-        traceId,
-      });
+
+      window.AutohomConversor.convertOne(descriptor);
       window.AutohomActasRender.updateMappingConversionStatus(mapping.id, 'queued');
     } catch (error) {
-      window.AutohomLogs.append(`❌ acta.convert.error trace=${traceId} ${error.message}`, 'error');
+      await window.AutohomActasStore.updateMappingConversion(mapping.id, {
+        lastStatus: 'error',
+        lastPdfId: null,
+        lastExcelPath: '',
+        lastError: error.message,
+      });
+      window.AutohomLogs.append(`acta.convert.error trace=${traceId} ${error.message}`, 'error');
       window.AutohomActasRender.updateMappingConversionStatus(mapping.id, 'error', `Error: ${error.message}`);
-      window.AutohomToast.show(`❌ ${error.message}`);
+      window.AutohomToast.show(`Error: ${error.message}`);
     } finally {
       button.disabled = false;
+      window.AutohomActasBatchConversion?.updateButtonState();
     }
   }
 
   return {
     normalizeFilename,
     findPdfByFilename,
+    prepareMappingConversion,
+    ensureBridgeReady,
     convertMapping,
   };
 })();

@@ -270,6 +270,7 @@ const ILovePDFRuntime = (() => {
       outputDirectory: pdf.outputDirectory || null,
       sourcePdfPath: pdf.sourcePdfPath || null,
       traceId: pdf.traceId || null,
+      batchId: pdf.batchId || null,
       ...extra,
     };
     chrome.runtime.sendMessage(payload).catch(() => {});
@@ -313,6 +314,7 @@ const ILovePDFRuntime = (() => {
       outputDirectory: pdf?.outputDirectory || null,
       sourcePdfPath: pdf?.sourcePdfPath || null,
       traceId: pdf?.traceId || null,
+      batchId: pdf?.batchId || null,
       ...extra,
     });
   }

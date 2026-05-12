@@ -2,6 +2,7 @@ window.AutohomActas = (() => {
   async function init() {
     await window.AutohomActasStore.loadMappings();
     window.AutohomActasRender.renderMappings(window.AutohomActasStore.getMappings());
+    window.AutohomActasBatchConversion?.init();
 
     window.AutohomSidepanelDom.byId('search').addEventListener('input', () => {
       window.AutohomActasRender.renderMappings(window.AutohomActasStore.filterMappings());
@@ -41,7 +42,8 @@ window.AutohomActas = (() => {
   function handleMappingSaved(mapping) {
     window.AutohomActasStore.prependMapping(mapping);
     window.AutohomActasRender.renderMappings(window.AutohomActasStore.filterMappings(), mapping.id);
-    window.AutohomToast.show('✅ Acta mapeada correctamente');
+    window.AutohomActasBatchConversion?.updateButtonState();
+    window.AutohomToast.show('Acta mapeada correctamente');
   }
 
   async function deleteMapping(id, card) {
@@ -57,6 +59,7 @@ window.AutohomActas = (() => {
       if (filtered.length === 0) {
         window.AutohomSidepanelDom.byId('empty-state').style.display = 'block';
       }
+      window.AutohomActasBatchConversion?.updateButtonState();
     }, 300);
   }
 
@@ -67,7 +70,7 @@ window.AutohomActas = (() => {
     }
 
     const ok = confirm(
-      '¿Seguro que quieres limpiar todos los registros de Actas? Esto no eliminará archivos PDF del PC ni la lista del Conversor PDF.'
+      'Seguro que quieres limpiar todos los registros de Actas? Esto no eliminara archivos PDF del PC ni la lista del Conversor PDF.'
     );
     if (!ok) {
       return;
@@ -76,11 +79,13 @@ window.AutohomActas = (() => {
     await chrome.storage.local.set({ mappings: [] });
     window.AutohomActasStore.clearMappings();
     window.AutohomActasRender.renderMappings([]);
-    window.AutohomToast.show('🗑️ Registros de Actas limpiados');
+    window.AutohomActasBatchConversion?.updateButtonState();
+    window.AutohomToast.show('Registros de Actas limpiados');
   }
 
   function updateMappingConversionStatus(mappingId, status, message = '', options = {}) {
     window.AutohomActasRender.updateMappingConversionStatus(mappingId, status, message, options);
+    window.AutohomActasBatchConversion?.updateButtonState();
   }
 
   async function convertMapping(mapping, card) {
@@ -96,5 +101,6 @@ window.AutohomActas = (() => {
     clearAllMappings,
     updateMappingConversionStatus,
     convertMapping,
+    convertAllMapped: () => window.AutohomActasBatchConversion?.convertAllMapped(),
   };
 })();

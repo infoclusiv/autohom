@@ -22,6 +22,7 @@ window.AutohomActasRender = (() => {
     if (mappings.length === 0) {
       empty.style.display = 'block';
       window.AutohomSidepanelDom.byId('count-label').textContent = '0 registros';
+      window.AutohomActasBatchConversion?.updateButtonState();
       return;
     }
 
@@ -29,6 +30,7 @@ window.AutohomActasRender = (() => {
     window.AutohomSidepanelDom.byId('count-label').textContent =
       `${mappings.length} registro${mappings.length !== 1 ? 's' : ''}`;
     mappings.forEach((mapping) => list.appendChild(createCard(mapping, mapping.id === newId)));
+    window.AutohomActasBatchConversion?.updateButtonState();
   }
 
   function applyStatusToCard(card, status, message = '', options = {}) {
