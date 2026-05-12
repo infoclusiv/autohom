@@ -9,6 +9,16 @@ const ILovePDFRuntime = (() => {
 
   function queueConversion(pdfDescriptor) {
     _queue.push(pdfDescriptor);
+    AutohomTelemetry.setContext({
+      workflowId: pdfDescriptor.workflowId || '',
+      traceId: pdfDescriptor.traceId || '',
+    });
+    AutohomTelemetry.emit({
+      eventName: AutohomEventNames.EXTENSION_QUEUE_ENQUEUED,
+      component: 'extension.runtime',
+      operation: 'queueConversion',
+      data: { pdfId: pdfDescriptor.pdfId, filename: pdfDescriptor.filename, queueLength: _queue.length },
+    });
     _logPdf('info', pdfDescriptor, 'ilovepdf.queue.enqueued', { queueLength: _queue.length });
     _processNext();
   }
@@ -17,6 +27,12 @@ const ILovePDFRuntime = (() => {
     for (const pdf of pdfList) {
       _queue.push(pdf);
     }
+    AutohomTelemetry.emit({
+      eventName: AutohomEventNames.EXTENSION_QUEUE_BULK_ENQUEUED,
+      component: 'extension.runtime',
+      operation: 'queueAll',
+      data: { count: pdfList.length, queueLength: _queue.length },
+    });
     ILovePDFUtils.log('info', '[Runtime] queue.bulk_enqueued', {
       count: pdfList.length,
       queueLength: _queue.length,
@@ -31,6 +47,17 @@ const ILovePDFRuntime = (() => {
     const pdf = _queue.shift();
     const startedAt = Date.now();
     _currentPdfId = pdf.pdfId;
+    AutohomTelemetry.setContext({
+      workflowId: pdf.workflowId || '',
+      traceId: pdf.traceId || '',
+    });
+    AutohomTelemetry.emit({
+      eventName: AutohomEventNames.EXTENSION_QUEUE_PROCESSING_STARTED,
+      component: 'extension.runtime',
+      operation: '_processNext',
+      status: 'started',
+      data: { pdfId: pdf.pdfId, filename: pdf.filename, queueRemaining: _queue.length },
+    });
 
     _logPdf('info', pdf, 'queue.start', { queueRemaining: _queue.length });
     _broadcastStatus(pdf, 'starting', `Iniciando conversión de ${pdf.filename}...`, {
@@ -62,6 +89,13 @@ const ILovePDFRuntime = (() => {
       _broadcastStatus(pdf, 'uploading', `Subiendo ${pdf.filename}...`, {
         elapsedMs: _elapsedMs(startedAt),
       });
+      AutohomTelemetry.emit({
+        eventName: AutohomEventNames.ILOVEPDF_UPLOAD_STARTED,
+        component: 'extension.runtime',
+        operation: '_processNext',
+        status: 'started',
+        data: { pdfId: pdf.pdfId, filename: pdf.filename, tabId: tab.id },
+      });
 
       _logPdf('info', pdf, 'phase1.send', {
         tabId: tab.id,
@@ -74,6 +108,12 @@ const ILovePDFRuntime = (() => {
         filename: pdf.filename,
         downloadUrl: `${CONFIG_ILOVEPDF.API_BASE_URL}/pdfs/${pdf.pdfId}/file`,
       }).then((response) => {
+        AutohomTelemetry.emit({
+          eventName: AutohomEventNames.ILOVEPDF_UPLOAD_MESSAGE_SENT,
+          component: 'extension.runtime',
+          operation: 'START_CONVERSION',
+          data: { pdfId: pdf.pdfId, tabId: tab.id, response },
+        });
         _logPdf('info', pdf, 'phase1.response', {
           tabId: tab.id,
           elapsedMs: _elapsedMs(startedAt),
@@ -165,6 +205,12 @@ const ILovePDFRuntime = (() => {
         downloadedFilename: downloadResult.filename,
         elapsedMs: _elapsedMs(startedAt),
       });
+      AutohomTelemetry.emit({
+        eventName: AutohomEventNames.ILOVEPDF_DOWNLOAD_COMPLETED,
+        component: 'extension.runtime',
+        operation: '_processNext',
+        data: { pdfId: pdf.pdfId, downloadId: downloadResult.downloadId, filename: downloadResult.filename },
+      });
 
       _broadcastStatus(pdf, 'finalizing', `Guardando Excel junto al PDF...`, {
         downloadedFilename: downloadResult.filename,
@@ -173,7 +219,23 @@ const ILovePDFRuntime = (() => {
       });
 
       const finalizeResult = await ILovePDFFinalizer.finalizeDownload(pdf, downloadResult);
+      AutohomTelemetry.emit({
+        eventName: AutohomEventNames.ILOVEPDF_FINALIZE_STARTED,
+        component: 'extension.runtime',
+        operation: '_processNext',
+        status: 'started',
+        data: { pdfId: pdf.pdfId, downloadId: downloadResult.downloadId },
+      });
       if (!finalizeResult?.ok) {
+        AutohomTelemetry.emit({
+          eventName: AutohomEventNames.ILOVEPDF_FINALIZE_FAILED,
+          component: 'extension.runtime',
+          operation: '_processNext',
+          level: 'error',
+          status: 'failed',
+          message: finalizeResult?.error || 'Finalize failed',
+          data: { pdfId: pdf.pdfId, downloadId: downloadResult.downloadId },
+        });
         throw new Error(
           finalizeResult?.error ||
           'La conversión terminó, pero no se pudo guardar el Excel junto al PDF.'
@@ -184,6 +246,12 @@ const ILovePDFRuntime = (() => {
         finalExcelPath: finalizeResult.excelPath || downloadResult.filename,
         elapsedMs: _elapsedMs(startedAt),
       });
+      AutohomTelemetry.emit({
+        eventName: AutohomEventNames.ILOVEPDF_FINALIZE_SUCCEEDED,
+        component: 'extension.runtime',
+        operation: '_processNext',
+        data: { pdfId: pdf.pdfId, finalExcelPath: finalizeResult.excelPath || downloadResult.filename },
+      });
       ILovePDFBridge.sendStatus(pdf.pdfId, 'completed', `${pdf.filename} convertido.`);
       _broadcastStatus(pdf, 'completed', `${pdf.filename} convertido exitosamente.`, {
         downloadedFilename: downloadResult.filename,
@@ -192,6 +260,16 @@ const ILovePDFRuntime = (() => {
         elapsedMs: _elapsedMs(startedAt),
       });
     } catch (err) {
+      AutohomTelemetry.emit({
+        eventName: AutohomEventNames.EXTENSION_QUEUE_PROCESSING_FAILED,
+        component: 'extension.runtime',
+        operation: '_processNext',
+        level: 'error',
+        status: 'failed',
+        message: err.message,
+        error: { type: err.name || 'Error', message: err.message },
+        data: { pdfId: pdf.pdfId, filename: pdf.filename },
+      });
       _logPdf('error', pdf, 'acta.convert.error', {
         elapsedMs: _elapsedMs(startedAt),
         error: err.message,
@@ -205,6 +283,12 @@ const ILovePDFRuntime = (() => {
     _currentPdfId = null;
 
     if (_queue.length > 0) {
+      AutohomTelemetry.emit({
+        eventName: AutohomEventNames.EXTENSION_QUEUE_DELAY_STARTED,
+        component: 'extension.runtime',
+        operation: '_processNext',
+        data: { delayMs: CONFIG_ILOVEPDF.TIMING.RATE_LIMIT_DELAY_MS, queueLength: _queue.length },
+      });
       ILovePDFUtils.log('info', '[Runtime] queue.delay', {
         delayMs: CONFIG_ILOVEPDF.TIMING.RATE_LIMIT_DELAY_MS,
         queueLength: _queue.length,
@@ -213,10 +297,23 @@ const ILovePDFRuntime = (() => {
     }
 
     _running = false;
+    AutohomTelemetry.emit({
+      eventName: AutohomEventNames.EXTENSION_QUEUE_PROCESSING_COMPLETED,
+      component: 'extension.runtime',
+      operation: '_processNext',
+      data: { pdfId: pdf.pdfId, queueLength: _queue.length },
+    });
     _processNext();
   }
 
   function _waitForDownloadPage(originalTabId, pdf, startedAt) {
+    AutohomTelemetry.emit({
+      eventName: AutohomEventNames.ILOVEPDF_DOWNLOAD_PAGE_WAIT_STARTED,
+      component: 'extension.runtime',
+      operation: '_waitForDownloadPage',
+      status: 'started',
+      data: { pdfId: pdf.pdfId, tabId: originalTabId },
+    });
     return new Promise((resolve, reject) => {
       const timeoutMs = CONFIG_ILOVEPDF.TIMING.DOWNLOAD_PAGE_WAIT_MS || 60000;
 
@@ -228,6 +325,12 @@ const ILovePDFRuntime = (() => {
         if (!currentUrl.includes('/descarga/')) return;
 
         cleanup();
+        AutohomTelemetry.emit({
+          eventName: AutohomEventNames.ILOVEPDF_DOWNLOAD_PAGE_DETECTED,
+          component: 'extension.runtime',
+          operation: '_waitForDownloadPage',
+          data: { pdfId: pdf.pdfId, tabId, url: currentUrl },
+        });
         _logPdf('info', pdf, 'download.page.detected', {
           tabId,
           url: currentUrl,
@@ -250,6 +353,15 @@ const ILovePDFRuntime = (() => {
 
       const timer = setTimeout(() => {
         cleanup();
+        AutohomTelemetry.emit({
+          eventName: AutohomEventNames.ILOVEPDF_DOWNLOAD_PAGE_TIMEOUT,
+          component: 'extension.runtime',
+          operation: '_waitForDownloadPage',
+          level: 'warn',
+          status: 'timeout',
+          message: `Timeout waiting for /descarga/ page after ${timeoutMs}ms`,
+          data: { pdfId: pdf.pdfId, tabId: originalTabId, timeoutMs },
+        });
         reject(new Error(`Timeout waiting for /descarga/ page after ${timeoutMs}ms`));
       }, timeoutMs);
 

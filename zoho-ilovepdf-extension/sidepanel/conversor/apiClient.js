@@ -34,6 +34,22 @@ window.AutohomConversorApi = (() => {
     return await readJson(`${API_BASE}/pdfs/clear`, { method: 'POST' });
   }
 
+  async function getObservabilityState() {
+    return await readJson(`${API_BASE}/observability/state`);
+  }
+
+  async function getRecentObservabilityEvents(limit = 20) {
+    return await readJson(`${API_BASE}/observability/events/recent?limit=${encodeURIComponent(limit)}`);
+  }
+
+  async function exportDiagnosticPackage(payload = {}) {
+    return await readJson(`${API_BASE}/observability/export`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  }
+
   async function registerLocalPdf(payload) {
     return await readJson(`${API_BASE}/pdfs/register-local`, {
       method: 'POST',
@@ -48,6 +64,9 @@ window.AutohomConversorApi = (() => {
     openFolderDialog,
     listPdfs,
     clearPdfs,
+    getObservabilityState,
+    getRecentObservabilityEvents,
+    exportDiagnosticPackage,
     registerLocalPdf,
   };
 })();

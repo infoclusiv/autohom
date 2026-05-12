@@ -29,5 +29,20 @@ const ILovePDFUtils = {
     } else {
       console.log(prefix, msg, details || "");
     }
+    if (typeof AutohomTelemetry !== 'undefined') {
+      const eventName = level === 'error'
+        ? AutohomEventNames.BROWSER_CONSOLE_ERROR
+        : level === 'warn'
+          ? AutohomEventNames.BROWSER_CONSOLE_WARN
+          : AutohomEventNames.BROWSER_CONSOLE_LOG;
+      AutohomTelemetry.emit({
+        eventName,
+        component: 'extension.runtime',
+        operation: 'ILovePDFUtils.log',
+        level: level === 'info' ? 'info' : level,
+        message: msg,
+        data: details || {},
+      });
+    }
   },
 };

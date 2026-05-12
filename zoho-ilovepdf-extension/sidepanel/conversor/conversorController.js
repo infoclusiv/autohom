@@ -4,14 +4,25 @@ window.AutohomConversor = (() => {
     window.AutohomSidepanelDom.byId('btn-convert-all').addEventListener('click', convertAll);
     window.AutohomSidepanelDom.byId('btn-clear-list').addEventListener('click', clearList);
     window.AutohomSidepanelDom.byId('btn-browse').addEventListener('click', browseFolder);
+    window.AutohomSidepanelDom.byId('btn-export-diagnostic')?.addEventListener('click', exportDiagnosticPackage);
+    window.AutohomSidepanelDom.byId('btn-copy-run-id')?.addEventListener('click', copyRunId);
+    window.AutohomSidepanelDom.byId('btn-copy-workflow-id')?.addEventListener('click', copyWorkflowId);
+    window.AutohomSidepanelDom.byId('btn-show-recent-errors')?.addEventListener('click', showRecentErrors);
     window.AutohomSidepanelDom.byId('btn-clear-logs').addEventListener('click', () => {
       window.AutohomLogs.clear();
     });
 
     await loadCurrentFolder();
+    await refreshObservabilityState();
     startPolling();
     checkBridge();
   }
+
+  let observabilityContext = {
+    runId: '',
+    workflowId: '',
+    traceId: '',
+  };
 
   async function loadCurrentFolder() {
     try {
@@ -196,6 +207,13 @@ window.AutohomConversor = (() => {
       window.AutohomConversorRender.renderPdfList();
       window.AutohomConversorRender.updateStats();
     }
+    if (message.traceId) {
+      observabilityContext.traceId = message.traceId;
+    }
+    if (message.workflowId) {
+      observabilityContext.workflowId = message.workflowId;
+    }
+    renderObservabilityContext(status);
 
     const mappingLink = window.AutohomActasStore.getActaConversion(pdfId);
     const mappingId = mappingLink?.mappingId || message.mappingId || null;
@@ -241,6 +259,7 @@ window.AutohomConversor = (() => {
       const tab = window.AutohomSidepanelDom.qs('.tab-btn[data-tab="conversor"]');
       if (tab && tab.classList.contains('active')) {
         refreshPdfs();
+        refreshObservabilityState();
       }
     }, 5000);
     window.AutohomConversorStore.setPollingTimer(timer);
@@ -275,6 +294,87 @@ window.AutohomConversor = (() => {
     window.AutohomConversorBridge.updateBridgeUI(connected);
   }
 
+  async function refreshObservabilityState() {
+    try {
+      const data = await window.AutohomConversorApi.getObservabilityState();
+      if (!data.ok) return;
+      observabilityContext.runId = data.runId || '';
+      if (!observabilityContext.workflowId && Array.isArray(data.activeWorkflows) && data.activeWorkflows.length > 0) {
+        observabilityContext.workflowId = data.activeWorkflows[data.activeWorkflows.length - 1].workflowId || '';
+        observabilityContext.traceId = data.activeWorkflows[data.activeWorkflows.length - 1].traceId || '';
+      }
+      renderObservabilityContext();
+    } catch (_error) {}
+  }
+
+  function updateObservabilityContext(message) {
+    observabilityContext = {
+      ...observabilityContext,
+      runId: message.runId || observabilityContext.runId,
+      workflowId: message.workflowId || observabilityContext.workflowId,
+      traceId: message.traceId || observabilityContext.traceId,
+    };
+    renderObservabilityContext();
+  }
+
+  function renderObservabilityContext(currentStep = '') {
+    const runEl = window.AutohomSidepanelDom.byId('diag-run-id');
+    const workflowEl = window.AutohomSidepanelDom.byId('diag-workflow-id');
+    const traceEl = window.AutohomSidepanelDom.byId('diag-trace-id');
+    const stepEl = window.AutohomSidepanelDom.byId('diag-current-step');
+    if (runEl) runEl.textContent = observabilityContext.runId || '—';
+    if (workflowEl) workflowEl.textContent = observabilityContext.workflowId || '—';
+    if (traceEl) traceEl.textContent = observabilityContext.traceId || '—';
+    if (stepEl) stepEl.textContent = currentStep || stepEl.textContent || 'idle';
+  }
+
+  async function exportDiagnosticPackage() {
+    try {
+      const data = await window.AutohomConversorApi.exportDiagnosticPackage({
+        scope: 'latest',
+        workflowId: observabilityContext.workflowId || undefined,
+        includeBrowserEvents: true,
+        includeDebugPrompt: true,
+      });
+      if (!data.ok) {
+        throw new Error(data.error || 'No se pudo exportar el paquete');
+      }
+      chrome.tabs.create({ url: `http://localhost:7790${data.downloadPath}` });
+      window.AutohomLogs.append(`🧪 Paquete diagnóstico listo: ${data.packageName}`, 'success');
+      window.AutohomToast.show('Paquete diagnóstico exportado');
+    } catch (error) {
+      window.AutohomLogs.append(`❌ No se pudo exportar diagnóstico: ${error.message}`, 'error');
+      window.AutohomToast.show('❌ No se pudo exportar diagnóstico');
+    }
+  }
+
+  async function showRecentErrors() {
+    try {
+      const data = await window.AutohomConversorApi.getRecentObservabilityEvents(20);
+      if (!data.ok) return;
+      const errors = Array.isArray(data.errors) ? data.errors : [];
+      if (errors.length === 0) {
+        window.AutohomLogs.append('ℹ️ No hay errores recientes en observabilidad.');
+        return;
+      }
+      for (const event of errors.slice(-5)) {
+        window.AutohomLogs.append(`❌ [${event.component}] ${event.eventName}: ${event.message || event.error?.message || 'sin detalle'}`, 'error');
+      }
+    } catch (error) {
+      window.AutohomLogs.append(`❌ No se pudieron leer errores recientes: ${error.message}`, 'error');
+    }
+  }
+
+  async function copyRunId() {
+    await navigator.clipboard.writeText(observabilityContext.runId || '');
+    window.AutohomToast.show('Run ID copiado');
+  }
+
+  async function copyWorkflowId() {
+    await navigator.clipboard.writeText(observabilityContext.workflowId || '');
+    window.AutohomToast.show('Workflow ID copiado');
+  }
+
   return {
     init: fullInit,
     loadCurrentFolder,
@@ -288,5 +388,7 @@ window.AutohomConversor = (() => {
     startPolling,
     checkBridge,
     updateBridgeUI,
+    refreshObservabilityState,
+    updateObservabilityContext,
   };
 })();

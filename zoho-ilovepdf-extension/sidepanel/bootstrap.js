@@ -17,6 +17,9 @@ async function initSidepanel() {
     if (message.type === 'ILOVEPDF_BRIDGE_STATUS') {
       window.AutohomConversor.updateBridgeUI(message.connected);
     }
+    if (message.type === 'AUTOHOM_OBSERVABILITY_CONTEXT') {
+      window.AutohomConversor.updateObservabilityContext(message);
+    }
     if (message.type === 'ILOVEPDF_SELECTOR_ALERT') {
       window.AutohomAlerts.addOrUpdate(message);
     }
