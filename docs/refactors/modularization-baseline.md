@@ -9,10 +9,10 @@
 - `app-python-zoho/app.py`
 
 ### Chrome extension
-- `autohom-extension/manifest.json`
-- `autohom-extension/background-main.js`
-- `autohom-extension/sidepanel.html`
-- `autohom-extension/sidepanel.js`
+- `zoho-ilovepdf-extension/manifest.json`
+- `zoho-ilovepdf-extension/background-main.js`
+- `zoho-ilovepdf-extension/sidepanel.html`
+- `zoho-ilovepdf-extension/sidepanel.js`
 
 ## Current local ports
 - HTTP: `localhost:7790`
@@ -31,6 +31,6 @@
 10. Export mappings CSV
 
 ## Known high-risk files
-- `autohom-extension/sidepanel.js`
+- `zoho-ilovepdf-extension/sidepanel.js`
 - `app-python-zoho/http_server.py`
 - `app-python-zoho/websocket_server.py`

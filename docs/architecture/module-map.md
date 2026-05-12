@@ -19,6 +19,9 @@ Business services for scanning folders and centralizing PDF-related operations.
 
 ## Chrome Extension
 
+### `zoho-ilovepdf-extension`
+Chrome extension folder containing the side panel, Zoho mapping automation, and iLovePDF conversion automation.
+
 ### `background-main.js`
 Service worker bootstrap.
 
@@ -36,6 +39,9 @@ Side panel bootstrap that wires tabs, modules, runtime messages, and pending-dow
 
 ### `sidepanel/actas`
 Actas UI module split into store, rendering, CSV export, conversion helpers, and controller.
+
+### `sidepanel/actas/actasBatchConversion.js`
+Coordinates batch conversion from the Actas tab by preparing mapped PDFs through `actasConversion.js` and enqueuing them through the existing iLovePDF runtime queue.
 
 ### `sidepanel/conversor`
 PDF converter UI module split into API client, store, rendering, bridge status, and controller.

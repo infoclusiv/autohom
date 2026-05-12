@@ -134,6 +134,7 @@ window.AutohomConversor = (() => {
       outputDirectory: descriptor.outputDirectory || null,
       sourcePdfPath: descriptor.sourcePdfPath || null,
       traceId: descriptor.traceId || null,
+      batchId: descriptor.batchId || null,
     });
     window.AutohomLogs.append(`🔄 Enviado a convertir: ${descriptor.filename}`);
     window.AutohomToast.show(`🔄 Convirtiendo ${descriptor.filename}...`);
@@ -205,6 +206,13 @@ window.AutohomConversor = (() => {
         status === 'error' && detail ? `Error: ${detail}` : '',
         message.finalExcelPath ? { finalExcelPath: message.finalExcelPath } : {}
       );
+      if (!['completed', 'error'].includes(status)) {
+        await window.AutohomActasStore.updateMappingConversion(mappingId, {
+          lastStatus: status,
+          lastPdfId: pdfId,
+          lastError: null,
+        });
+      }
       if (status === 'completed') {
         await window.AutohomActasStore.updateMappingConversion(mappingId, {
           lastStatus: 'completed',
@@ -224,6 +232,7 @@ window.AutohomConversor = (() => {
       if (status === 'completed' || status === 'error') {
         window.AutohomActasStore.clearActaConversion(pdfId);
       }
+      window.AutohomActasBatchConversion?.updateButtonState();
     }
   }
 

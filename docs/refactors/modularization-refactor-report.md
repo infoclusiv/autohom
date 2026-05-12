@@ -23,7 +23,7 @@ Implemented the baseline, regression checklist, Python modularization foundation
 - `app-python-zoho/tests/test_state_manager.py`
 - `app-python-zoho/tests/test_pdf_scanner.py`
 - `app-python-zoho/tests/test_pdf_service.py`
-- `autohom-extension/sidepanel/...`
+- `zoho-ilovepdf-extension/sidepanel/...`
 
 ## Compatibility wrappers kept
 - `app-python-zoho/config.py`

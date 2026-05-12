@@ -21,6 +21,10 @@ The extension keeps the sequential conversion queue and reports progress through
 ## 7. Conversion from acta mapping
 The modularized Actas module refreshes the Conversor PDF list, checks bridge status, resolves the matching PDF by filename, and delegates conversion through the Conversor module.
 
+The Actas tab also exposes a batch conversion action. That action validates the bridge once, prepares each eligible mapped Acta through `actasConversion.js`, registers each local PDF with the Python app, links each generated `pdfId` with its `mappingId`, and sends the prepared descriptors to `ILOVEPDF_CONVERT_ALL`.
+
+The iLovePDF background runtime keeps processing the queue sequentially, and the same progress events continue updating both the Conversor list and the Actas card state.
+
 ## 8. Selector alert
 The background router emits `ILOVEPDF_SELECTOR_ALERT`; the modularized Alerts module renders the warning or error banner and persists dismissal state through local storage.
 
