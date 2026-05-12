@@ -1,0 +1,5 @@
+{
+  "filesToInspectFirst": [
+    "zoho-ilovepdf-extension/ilovepdf-background/runtime.js"
+  ]
+}

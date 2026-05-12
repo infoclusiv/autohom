@@ -1,0 +1,69 @@
+{
+  "connected": true,
+  "version": "2.0.0",
+  "status": "connected",
+  "message": "Zoho Acta Mapper · iLovePDF v2.0.0 conectada.",
+  "last_error": null,
+  "host": "localhost",
+  "port": 8769,
+  "last_seen": 1778624293.9623132,
+  "running": true,
+  "connectionId": "conn-1",
+  "lastSeenSecondsAgo": 15.4,
+  "recentEvents": [
+    {
+      "t": 1778624248.831,
+      "ts": "17:17:28",
+      "ev": "ws_handler_start",
+      "cid": "conn-1"
+    },
+    {
+      "t": 1778624248.851,
+      "ts": "17:17:28",
+      "ev": "bootstrap_ping_sent",
+      "cid": "conn-1"
+    },
+    {
+      "t": 1778624248.874,
+      "ts": "17:17:28",
+      "ev": "auth_promoted",
+      "cid": "conn-1",
+      "d": {
+        "replacing": "False"
+      }
+    },
+    {
+      "t": 1778624248.887,
+      "ts": "17:17:28",
+      "ev": "bootstrap_ok",
+      "cid": "conn-1"
+    },
+    {
+      "t": 1778624248.902,
+      "ts": "17:17:28",
+      "ev": "auth_refreshed",
+      "cid": "conn-1",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778624293.942,
+      "ts": "17:18:13",
+      "ev": "keepalive_ping",
+      "cid": "conn-1",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1778624293.962,
+      "ts": "17:18:13",
+      "ev": "auth_refreshed",
+      "cid": "conn-1",
+      "d": {
+        "action": "PONG"
+      }
+    }
+  ]
+}

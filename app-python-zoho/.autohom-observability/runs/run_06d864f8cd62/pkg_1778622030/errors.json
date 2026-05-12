@@ -1,0 +1,30 @@
+[
+  {
+    "eventName": "workflow.step.failed",
+    "component": "extension.runtime",
+    "operation": "fake_conversion",
+    "level": "error",
+    "status": "failed",
+    "runId": "run_06d864f8cd62",
+    "workflowId": "wf_073794e1a958",
+    "traceId": "tr_32b7ee2dee9b",
+    "spanId": "sp_574c3798110d",
+    "parentSpanId": null,
+    "message": "Fake selector failure.",
+    "data": {
+      "selector": ".download-button"
+    },
+    "actual": {
+      "found": false
+    },
+    "expected": {
+      "found": true
+    },
+    "schemaVersion": "1.0",
+    "eventId": "evt_35480b0f4a59464e",
+    "timestamp": "2026-05-12T16:40:30.731-05:00",
+    "monotonicMs": 1758671064,
+    "decision": {},
+    "tags": []
+  }
+]
