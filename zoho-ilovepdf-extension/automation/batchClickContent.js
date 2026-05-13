@@ -1,4 +1,8 @@
 (function registerAutohomBatchClickContent() {
+  if (window.AutohomBatchClickContent?.__registered) {
+    return;
+  }
+
   const DEFAULT_BATCH_SIZE = 15;
   const MIN_BATCH_SIZE = 1;
   const MAX_BATCH_SIZE = 50;
@@ -7,6 +11,30 @@
   let batchElements = [];
   let batchIndex = 0;
   let lastBatchParams = '';
+
+  function emitBatchEvent({
+    eventName,
+    level = 'info',
+    status = 'succeeded',
+    runId = '',
+    message = '',
+    details = '',
+    data = {},
+  }) {
+    try {
+      chrome.runtime.sendMessage({
+        type: 'AUTO_BATCH_EVENT',
+        eventName,
+        component: 'automation.batch_content',
+        level,
+        status,
+        runId,
+        message,
+        details,
+        data,
+      });
+    } catch (_error) {}
+  }
 
   function normalizeText(value) {
     return String(value || '').trim().toLowerCase();
@@ -100,6 +128,14 @@
   }
 
   function sendProgress(runId, total, processed, status) {
+    emitBatchEvent({
+      eventName: 'automation.batch.progress',
+      runId,
+      status,
+      details: `run=${runId} total=${total} processed=${processed} status=${status}`,
+      data: { total, processed, status },
+    });
+
     chrome.runtime.sendMessage({
       type: 'AUTO_BATCH_PROGRESS',
       runId,
@@ -177,9 +213,24 @@
     batchElements = [];
     batchIndex = 0;
     lastBatchParams = '';
+    emitBatchEvent({
+      eventName: 'automation.batch.reset',
+      details: 'state_cleared',
+    });
   }
 
   function runBatch({ runId, text, selector, batchSize }) {
+    emitBatchEvent({
+      eventName: 'automation.batch.content_started',
+      runId,
+      status: 'started',
+      details: `run=${runId} selector="${String(selector || '').trim()}"`,
+      data: {
+        selector: String(selector || '').trim(),
+        requestedBatchSize: batchSize,
+      },
+    });
+
     if (!normalizeText(text)) {
       sendProgress(runId, 0, 0, 'empty');
       return;
@@ -199,6 +250,16 @@
       batchElements = findMatchingElements(text, selector);
       batchIndex = 0;
       lastBatchParams = currentParams;
+      emitBatchEvent({
+        eventName: 'automation.batch.scan_completed',
+        runId,
+        details: `run=${runId} total=${batchElements.length}`,
+        data: {
+          selector: String(selector).trim(),
+          text: normalizeText(text),
+          total: batchElements.length,
+        },
+      });
     }
 
     if (batchElements.length === 0) {
@@ -224,11 +285,17 @@
   }
 
   window.AutohomBatchClickContent = {
+    __registered: true,
     runBatch,
     resetState,
   };
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (message.type === 'AUTO_BATCH_PING') {
+      sendResponse({ ok: true, status: 'ready' });
+      return true;
+    }
+
     if (message.type === 'AUTO_BATCH_RUN') {
       runBatch({
         runId: message.runId,

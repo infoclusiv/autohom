@@ -27,6 +27,9 @@ async function initSidepanel() {
     if (message.type === 'AUTO_BATCH_PROGRESS') {
       window.AutohomAutomatizarLote?.handleRuntimeMessage(message);
     }
+    if (message.type === 'AUTO_BATCH_EVENT') {
+      window.AutohomAutomatizarLote?.handleRuntimeEvent(message);
+    }
   });
 
   await window.AutohomActas.restorePendingDownloads();

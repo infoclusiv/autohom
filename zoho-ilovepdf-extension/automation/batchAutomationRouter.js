@@ -1,5 +1,22 @@
 (function registerBatchAutomationRouter() {
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (message.type === 'AUTO_BATCH_EVENT') {
+      try {
+        AutohomTelemetry.emit({
+          eventName: message.eventName || 'automation.batch.event',
+          component: message.component || 'automation.batch_content',
+          level: message.level || 'info',
+          status: message.status || 'succeeded',
+          runId: message.runId || '',
+          message: message.message || '',
+          data: message.data || {},
+        });
+      } catch (_error) {}
+
+      sendResponse({ ok: true });
+      return false;
+    }
+
     if (message.type !== 'AUTO_BATCH_OPEN_BACKGROUND_TAB') {
       return false;
     }

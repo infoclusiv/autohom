@@ -16,11 +16,7 @@ window.AutohomAutomatizarLote = (() => {
     return await new Promise((resolve, reject) => {
       chrome.tabs.sendMessage(tabId, message, (response) => {
         if (chrome.runtime.lastError) {
-          const rawMessage = chrome.runtime.lastError.message || '';
-          const hint = rawMessage.includes('Receiving end does not exist')
-            ? 'recarga la pagina o abre una pagina compatible.'
-            : rawMessage;
-          reject(new Error(hint));
+          reject(new Error(chrome.runtime.lastError.message || 'No se pudo enviar el mensaje a la pestana.'));
           return;
         }
 
@@ -32,6 +28,18 @@ window.AutohomAutomatizarLote = (() => {
         resolve(response);
       });
     });
+  }
+
+  async function ensureBatchContentScript(tabId) {
+    try {
+      await sendTabMessage(tabId, { type: 'AUTO_BATCH_PING' });
+      return;
+    } catch (_error) {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['automation/batchClickContent.js'],
+      });
+    }
   }
 
   function isAllowedTargetTab(tab) {
@@ -87,6 +95,12 @@ window.AutohomAutomatizarLote = (() => {
         `automation.batch.run_requested run=${runId} tab=${tab.id} text="${config.text}" selector="${config.selector}" batch=${config.batchSize}`
       );
 
+      window.AutohomLogs.append(
+        `automation.batch.active_tab tab=${tab.id} url=${tab.url || ''}`
+      );
+
+      await ensureBatchContentScript(tab.id);
+
       await sendTabMessage(tab.id, {
         type: 'AUTO_BATCH_RUN',
         runId,
@@ -103,10 +117,23 @@ window.AutohomAutomatizarLote = (() => {
       window.AutohomAutomatizarLoteStore.setStatusLevel('info');
       window.AutohomAutomatizarLoteRender.renderState();
     } catch (error) {
-      window.AutohomAutomatizarLoteStore.setError(error.message);
+      const message = error?.message || String(error);
+      const isTabMessageError =
+        message.includes('Receiving end does not exist') ||
+        message.includes('Could not establish connection') ||
+        message.includes('No se pudo enviar el mensaje a la pestana') ||
+        message.includes('Cannot access contents of the page');
+      const visibleMessage = isTabMessageError
+        ? `No se pudo contactar el content script. Detalle: ${message}`
+        : message;
+
+      window.AutohomAutomatizarLoteStore.setError(visibleMessage);
       window.AutohomAutomatizarLoteRender.renderState();
-      window.AutohomToast.show(`Error: ${error.message}`);
-      window.AutohomLogs.append(`automation.batch.run_failed ${error.message}`, 'error');
+      window.AutohomToast.show(`Error: ${message}`);
+      window.AutohomLogs.append(
+        `${isTabMessageError ? 'automation.batch.tab_message_failed' : 'automation.batch.run_failed'} ${message}`,
+        'error'
+      );
     } finally {
       window.AutohomAutomatizarLoteStore.setRunning(false);
       window.AutohomAutomatizarLoteRender.renderState();
@@ -123,6 +150,7 @@ window.AutohomAutomatizarLote = (() => {
         throw new Error('La pestana activa no es Zoho CRM.');
       }
 
+      await ensureBatchContentScript(tab.id);
       await sendTabMessage(tab.id, { type: 'AUTO_BATCH_RESET' });
 
       window.AutohomAutomatizarLoteStore.reset();
@@ -159,6 +187,21 @@ window.AutohomAutomatizarLote = (() => {
     );
   }
 
+  function handleRuntimeEvent(message) {
+    if (message.type !== 'AUTO_BATCH_EVENT') {
+      return;
+    }
+
+    if (message.eventName === 'automation.batch.progress') {
+      return;
+    }
+
+    const level = message.level || 'info';
+    const details = String(message.details || '').trim();
+    const suffix = details ? ` ${details}` : '';
+    window.AutohomLogs.append(`${message.eventName || 'automation.batch.event'}${suffix}`, level);
+  }
+
   function init() {
     const els = window.AutohomAutomatizarLoteRender.getEls();
     if (!els.runButton || !els.resetButton) {
@@ -186,5 +229,6 @@ window.AutohomAutomatizarLote = (() => {
   return {
     init,
     handleRuntimeMessage,
+    handleRuntimeEvent,
   };
 })();
