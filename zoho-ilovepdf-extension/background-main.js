@@ -10,6 +10,7 @@ try {
     "observability/contracts.js",
     "observability/telemetry.js",
     "observability/browserCapture.js",
+    "automation/batchAutomationRouter.js",
     "background-zoho.js",
     "ilovepdf/config.js",
     "ilovepdf/utils.js",

@@ -132,6 +132,119 @@
     .empty-title { font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
     .empty-desc { font-size: 11px; color: var(--text-dim); font-family: 'DM Mono', monospace; line-height: 1.5; }
 
+    /* AUTOMATIZAR LOTE TAB */
+    .automate-lote-panel { padding: 14px 18px 18px; }
+    .automate-lote-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .automate-lote-title {
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+    .automate-lote-desc {
+      font-size: 10px;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .automate-lote-field { margin-bottom: 10px; }
+    .automate-lote-field label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+    .automate-lote-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 11px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      outline: none;
+    }
+    .automate-lote-input:focus { border-color: var(--accent); }
+    .automate-lote-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .automate-lote-btn {
+      flex: 1;
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .automate-lote-btn.primary {
+      background: var(--accent);
+      color: white;
+      border: 1px solid var(--accent);
+    }
+    .automate-lote-btn.secondary {
+      background: var(--surface);
+      color: var(--danger);
+      border: 1px solid var(--danger);
+    }
+    .automate-lote-btn:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+    .automate-lote-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .automate-lote-status {
+      margin-top: 10px;
+      padding: 8px;
+      font-size: 10px;
+      font-family: 'DM Mono', monospace;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      text-align: center;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .automate-lote-status.is-error {
+      color: var(--danger);
+      border-color: var(--danger);
+      background: var(--danger-soft);
+    }
+    .automate-lote-status.is-success {
+      color: var(--success);
+      border-color: var(--success);
+      background: var(--success-glow);
+    }
+    .automate-lote-help {
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 10px;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-muted);
+      line-height: 1.5;
+      background: var(--accent-soft);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
     /* ═══ CONVERSOR TAB ══════════════════════════════════════════════════ */
 
     /* Folder row — ahora con botón de explorador */
@@ -317,12 +430,69 @@
       </div>
     </div>
     <div class="tabs">
+      <button class="tab-btn" data-tab="automatizar-lote">Automatizar Lote</button>
       <button class="tab-btn active" data-tab="actas">📋 Actas</button>
       <button class="tab-btn" data-tab="conversor">⚡ Conversor PDF</button>
     </div>
   </div>
 
   <!-- ═══ TAB: ACTAS ═══ -->
+  <div class="tab-content" id="tab-automatizar-lote">
+    <div class="automate-lote-panel">
+      <div class="automate-lote-card">
+        <div class="automate-lote-title">Automatizar Lote</div>
+        <div class="automate-lote-desc">
+          Busca elementos visibles en la pestaña activa y procesa un lote por ejecución.
+        </div>
+        <div class="automate-lote-field">
+          <label for="auto-batch-text">Buscar texto</label>
+          <input
+            id="auto-batch-text"
+            class="automate-lote-input"
+            type="text"
+            placeholder="Ej: SOLICITUD DE HOMOLOGACION"
+          />
+        </div>
+        <div class="automate-lote-field">
+          <label for="auto-batch-selector">Selector</label>
+          <input
+            id="auto-batch-selector"
+            class="automate-lote-input"
+            type="text"
+            placeholder="Ej: a, button, .btn"
+          />
+        </div>
+        <div class="automate-lote-field">
+          <label for="auto-batch-size">Tamano del lote</label>
+          <input
+            id="auto-batch-size"
+            class="automate-lote-input"
+            type="number"
+            value="15"
+            min="1"
+            max="50"
+          />
+        </div>
+        <div class="automate-lote-actions">
+          <button id="btn-auto-batch-reset" class="automate-lote-btn secondary">
+            Reiniciar
+          </button>
+          <button id="btn-auto-batch-run" class="automate-lote-btn primary">
+            Ejecutar lote
+          </button>
+        </div>
+        <div id="auto-batch-status" class="automate-lote-status">
+          Esperando configuracion...
+        </div>
+      </div>
+      <div class="automate-lote-help">
+        <strong>Uso recomendado:</strong>
+        abre primero la pagina objetivo, luego configura texto + selector y ejecuta el lote.
+        Si vuelves a ejecutar con los mismos parametros, continuara desde el siguiente grupo.
+      </div>
+    </div>
+  </div>
+
   <div class="tab-content active" id="tab-actas">
     <div class="stats-bar">
       <div class="stat-chip"><span class="stat-num" id="stat-total">0</span><span class="stat-label">MAPEADOS</span></div>
@@ -445,6 +615,10 @@
   <script src="sidepanel/shared/chromeMessages.js"></script>
 
   <script src="sidepanel/tabs/tabsController.js"></script>
+  <script src="sidepanel/automatizar-lote/automatizarLoteContracts.js"></script>
+  <script src="sidepanel/automatizar-lote/automatizarLoteStore.js"></script>
+  <script src="sidepanel/automatizar-lote/automatizarLoteRender.js"></script>
+  <script src="sidepanel/automatizar-lote/automatizarLoteController.js"></script>
 
   <script src="sidepanel/actas/actasStore.js"></script>
   <script src="sidepanel/actas/actasRender.js"></script>

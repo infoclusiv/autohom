@@ -1,5 +1,6 @@
 async function initSidepanel() {
   window.AutohomTabsController.init();
+  window.AutohomAutomatizarLote?.init();
   await window.AutohomActas.init();
   await window.AutohomConversor.init();
   window.AutohomAlerts.init();
@@ -22,6 +23,9 @@ async function initSidepanel() {
     }
     if (message.type === 'ILOVEPDF_SELECTOR_ALERT') {
       window.AutohomAlerts.addOrUpdate(message);
+    }
+    if (message.type === 'AUTO_BATCH_PROGRESS') {
+      window.AutohomAutomatizarLote?.handleRuntimeMessage(message);
     }
   });
 

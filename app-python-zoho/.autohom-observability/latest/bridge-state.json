@@ -6,187 +6,187 @@
   "last_error": null,
   "host": "localhost",
   "port": 8769,
-  "last_seen": 1778696790.6239254,
+  "last_seen": 1778698681.4490016,
   "running": true,
-  "connectionId": "conn-12",
-  "lastSeenSecondsAgo": 15.6,
+  "connectionId": "conn-14",
+  "lastSeenSecondsAgo": 31.7,
   "recentEvents": [
     {
-      "t": 1778696384.904,
-      "ts": "13:19:44",
+      "t": 1778698275.658,
+      "ts": "13:51:15",
       "ev": "keepalive_ping",
-      "cid": "conn-12",
+      "cid": "conn-14",
       "d": {
         "stale_s": "45.0"
       }
     },
     {
-      "t": 1778696384.935,
-      "ts": "13:19:44",
+      "t": 1778698275.7,
+      "ts": "13:51:15",
       "ev": "auth_refreshed",
-      "cid": "conn-12",
+      "cid": "conn-14",
       "d": {
         "action": "PONG"
       }
     },
     {
-      "t": 1778696429.983,
-      "ts": "13:20:29",
+      "t": 1778698320.746,
+      "ts": "13:52:00",
       "ev": "keepalive_ping",
-      "cid": "conn-12",
+      "cid": "conn-14",
       "d": {
         "stale_s": "45.0"
       }
     },
     {
-      "t": 1778696430.021,
-      "ts": "13:20:30",
+      "t": 1778698320.797,
+      "ts": "13:52:00",
       "ev": "auth_refreshed",
-      "cid": "conn-12",
+      "cid": "conn-14",
       "d": {
         "action": "PONG"
       }
     },
     {
-      "t": 1778696475.072,
-      "ts": "13:21:15",
+      "t": 1778698365.844,
+      "ts": "13:52:45",
       "ev": "keepalive_ping",
-      "cid": "conn-12",
-      "d": {
-        "stale_s": "45.1"
-      }
-    },
-    {
-      "t": 1778696475.104,
-      "ts": "13:21:15",
-      "ev": "auth_refreshed",
-      "cid": "conn-12",
-      "d": {
-        "action": "PONG"
-      }
-    },
-    {
-      "t": 1778696520.158,
-      "ts": "13:22:00",
-      "ev": "keepalive_ping",
-      "cid": "conn-12",
-      "d": {
-        "stale_s": "45.1"
-      }
-    },
-    {
-      "t": 1778696520.186,
-      "ts": "13:22:00",
-      "ev": "auth_refreshed",
-      "cid": "conn-12",
-      "d": {
-        "action": "PONG"
-      }
-    },
-    {
-      "t": 1778696565.236,
-      "ts": "13:22:45",
-      "ev": "keepalive_ping",
-      "cid": "conn-12",
+      "cid": "conn-14",
       "d": {
         "stale_s": "45.0"
       }
     },
     {
-      "t": 1778696565.26,
-      "ts": "13:22:45",
+      "t": 1778698365.892,
+      "ts": "13:52:45",
       "ev": "auth_refreshed",
-      "cid": "conn-12",
+      "cid": "conn-14",
       "d": {
         "action": "PONG"
       }
     },
     {
-      "t": 1778696610.293,
-      "ts": "13:23:30",
+      "t": 1778698410.932,
+      "ts": "13:53:30",
       "ev": "keepalive_ping",
-      "cid": "conn-12",
+      "cid": "conn-14",
       "d": {
         "stale_s": "45.0"
       }
     },
     {
-      "t": 1778696610.326,
-      "ts": "13:23:30",
+      "t": 1778698410.967,
+      "ts": "13:53:30",
       "ev": "auth_refreshed",
-      "cid": "conn-12",
+      "cid": "conn-14",
       "d": {
         "action": "PONG"
       }
     },
     {
-      "t": 1778696655.377,
-      "ts": "13:24:15",
+      "t": 1778698456.011,
+      "ts": "13:54:16",
       "ev": "keepalive_ping",
-      "cid": "conn-12",
-      "d": {
-        "stale_s": "45.1"
-      }
-    },
-    {
-      "t": 1778696655.406,
-      "ts": "13:24:15",
-      "ev": "auth_refreshed",
-      "cid": "conn-12",
-      "d": {
-        "action": "PONG"
-      }
-    },
-    {
-      "t": 1778696700.437,
-      "ts": "13:25:00",
-      "ev": "keepalive_ping",
-      "cid": "conn-12",
+      "cid": "conn-14",
       "d": {
         "stale_s": "45.0"
       }
     },
     {
-      "t": 1778696700.467,
-      "ts": "13:25:00",
+      "t": 1778698456.041,
+      "ts": "13:54:16",
       "ev": "auth_refreshed",
-      "cid": "conn-12",
+      "cid": "conn-14",
       "d": {
         "action": "PONG"
       }
     },
     {
-      "t": 1778696745.512,
-      "ts": "13:25:45",
+      "t": 1778698501.072,
+      "ts": "13:55:01",
       "ev": "keepalive_ping",
-      "cid": "conn-12",
+      "cid": "conn-14",
       "d": {
         "stale_s": "45.0"
       }
     },
     {
-      "t": 1778696745.543,
-      "ts": "13:25:45",
+      "t": 1778698501.113,
+      "ts": "13:55:01",
       "ev": "auth_refreshed",
-      "cid": "conn-12",
+      "cid": "conn-14",
       "d": {
         "action": "PONG"
       }
     },
     {
-      "t": 1778696790.598,
-      "ts": "13:26:30",
+      "t": 1778698546.145,
+      "ts": "13:55:46",
       "ev": "keepalive_ping",
-      "cid": "conn-12",
+      "cid": "conn-14",
       "d": {
-        "stale_s": "45.1"
+        "stale_s": "45.0"
       }
     },
     {
-      "t": 1778696790.624,
-      "ts": "13:26:30",
+      "t": 1778698546.2,
+      "ts": "13:55:46",
       "ev": "auth_refreshed",
-      "cid": "conn-12",
+      "cid": "conn-14",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778698591.246,
+      "ts": "13:56:31",
+      "ev": "keepalive_ping",
+      "cid": "conn-14",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1778698591.302,
+      "ts": "13:56:31",
+      "ev": "auth_refreshed",
+      "cid": "conn-14",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778698636.34,
+      "ts": "13:57:16",
+      "ev": "keepalive_ping",
+      "cid": "conn-14",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1778698636.376,
+      "ts": "13:57:16",
+      "ev": "auth_refreshed",
+      "cid": "conn-14",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778698681.401,
+      "ts": "13:58:01",
+      "ev": "keepalive_ping",
+      "cid": "conn-14",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1778698681.449,
+      "ts": "13:58:01",
+      "ev": "auth_refreshed",
+      "cid": "conn-14",
       "d": {
         "action": "PONG"
       }
