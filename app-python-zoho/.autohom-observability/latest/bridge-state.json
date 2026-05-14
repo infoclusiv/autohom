@@ -6,178 +6,187 @@
   "last_error": null,
   "host": "localhost",
   "port": 8769,
-  "last_seen": 1778700360.534851,
+  "last_seen": 1778766932.8629746,
   "running": true,
-  "connectionId": "conn-15",
-  "lastSeenSecondsAgo": 2.1,
+  "connectionId": "conn-4",
+  "lastSeenSecondsAgo": 35.0,
   "recentEvents": [
     {
-      "t": 1778700019.514,
-      "ts": "14:20:19",
-      "ev": "auth_refreshed",
-      "cid": "conn-14",
-      "d": {
-        "action": "PONG"
-      }
-    },
-    {
-      "t": 1778700064.548,
-      "ts": "14:21:04",
+      "t": 1778766541.805,
+      "ts": "08:49:01",
       "ev": "keepalive_ping",
-      "cid": "conn-14",
-      "d": {
-        "stale_s": "45.0"
-      }
-    },
-    {
-      "t": 1778700064.585,
-      "ts": "14:21:04",
-      "ev": "auth_refreshed",
-      "cid": "conn-14",
-      "d": {
-        "action": "PONG"
-      }
-    },
-    {
-      "t": 1778700109.631,
-      "ts": "14:21:49",
-      "ev": "keepalive_ping",
-      "cid": "conn-14",
-      "d": {
-        "stale_s": "45.0"
-      }
-    },
-    {
-      "t": 1778700109.694,
-      "ts": "14:21:49",
-      "ev": "auth_refreshed",
-      "cid": "conn-14",
-      "d": {
-        "action": "PONG"
-      }
-    },
-    {
-      "t": 1778700154.721,
-      "ts": "14:22:34",
-      "ev": "keepalive_ping",
-      "cid": "conn-14",
-      "d": {
-        "stale_s": "45.0"
-      }
-    },
-    {
-      "t": 1778700154.754,
-      "ts": "14:22:34",
-      "ev": "auth_refreshed",
-      "cid": "conn-14",
-      "d": {
-        "action": "PONG"
-      }
-    },
-    {
-      "t": 1778700179.835,
-      "ts": "14:22:59",
-      "ev": "ws_handler_start",
-      "cid": "conn-15"
-    },
-    {
-      "t": 1778700180.014,
-      "ts": "14:23:00",
-      "ev": "bootstrap_ping_sent",
-      "cid": "conn-15"
-    },
-    {
-      "t": 1778700180.076,
-      "ts": "14:23:00",
-      "ev": "auth_promoted",
-      "cid": "conn-15",
-      "d": {
-        "replacing": "False"
-      }
-    },
-    {
-      "t": 1778700180.104,
-      "ts": "14:23:00",
-      "ev": "bootstrap_ok",
-      "cid": "conn-15"
-    },
-    {
-      "t": 1778700180.136,
-      "ts": "14:23:00",
-      "ev": "auth_refreshed",
-      "cid": "conn-15",
-      "d": {
-        "action": "PONG"
-      }
-    },
-    {
-      "t": 1778700225.154,
-      "ts": "14:23:45",
-      "ev": "keepalive_ping",
-      "cid": "conn-15",
-      "d": {
-        "stale_s": "45.0"
-      }
-    },
-    {
-      "t": 1778700225.198,
-      "ts": "14:23:45",
-      "ev": "auth_refreshed",
-      "cid": "conn-15",
-      "d": {
-        "action": "PONG"
-      }
-    },
-    {
-      "t": 1778700270.238,
-      "ts": "14:24:30",
-      "ev": "keepalive_ping",
-      "cid": "conn-15",
-      "d": {
-        "stale_s": "45.0"
-      }
-    },
-    {
-      "t": 1778700270.282,
-      "ts": "14:24:30",
-      "ev": "auth_refreshed",
-      "cid": "conn-15",
-      "d": {
-        "action": "PONG"
-      }
-    },
-    {
-      "t": 1778700315.324,
-      "ts": "14:25:15",
-      "ev": "keepalive_ping",
-      "cid": "conn-15",
-      "d": {
-        "stale_s": "45.0"
-      }
-    },
-    {
-      "t": 1778700315.393,
-      "ts": "14:25:15",
-      "ev": "auth_refreshed",
-      "cid": "conn-15",
-      "d": {
-        "action": "PONG"
-      }
-    },
-    {
-      "t": 1778700360.447,
-      "ts": "14:26:00",
-      "ev": "keepalive_ping",
-      "cid": "conn-15",
+      "cid": "conn-4",
       "d": {
         "stale_s": "45.1"
       }
     },
     {
-      "t": 1778700360.535,
-      "ts": "14:26:00",
+      "t": 1778766541.93,
+      "ts": "08:49:01",
       "ev": "auth_refreshed",
-      "cid": "conn-15",
+      "cid": "conn-4",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778766586.987,
+      "ts": "08:49:46",
+      "ev": "keepalive_ping",
+      "cid": "conn-4",
+      "d": {
+        "stale_s": "45.1"
+      }
+    },
+    {
+      "t": 1778766587.021,
+      "ts": "08:49:47",
+      "ev": "auth_refreshed",
+      "cid": "conn-4",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778766632.07,
+      "ts": "08:50:32",
+      "ev": "keepalive_ping",
+      "cid": "conn-4",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1778766632.106,
+      "ts": "08:50:32",
+      "ev": "auth_refreshed",
+      "cid": "conn-4",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778766677.152,
+      "ts": "08:51:17",
+      "ev": "keepalive_ping",
+      "cid": "conn-4",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1778766677.191,
+      "ts": "08:51:17",
+      "ev": "auth_refreshed",
+      "cid": "conn-4",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778766722.224,
+      "ts": "08:52:02",
+      "ev": "keepalive_ping",
+      "cid": "conn-4",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1778766722.261,
+      "ts": "08:52:02",
+      "ev": "auth_refreshed",
+      "cid": "conn-4",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778766767.298,
+      "ts": "08:52:47",
+      "ev": "keepalive_ping",
+      "cid": "conn-4",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1778766767.342,
+      "ts": "08:52:47",
+      "ev": "auth_refreshed",
+      "cid": "conn-4",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778766812.392,
+      "ts": "08:53:32",
+      "ev": "keepalive_ping",
+      "cid": "conn-4",
+      "d": {
+        "stale_s": "45.1"
+      }
+    },
+    {
+      "t": 1778766812.503,
+      "ts": "08:53:32",
+      "ev": "auth_refreshed",
+      "cid": "conn-4",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778766842.572,
+      "ts": "08:54:02",
+      "ev": "keepalive_ping",
+      "cid": "conn-4",
+      "d": {
+        "stale_s": "30.1"
+      }
+    },
+    {
+      "t": 1778766842.668,
+      "ts": "08:54:02",
+      "ev": "auth_refreshed",
+      "cid": "conn-4",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778766887.71,
+      "ts": "08:54:47",
+      "ev": "keepalive_ping",
+      "cid": "conn-4",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1778766887.76,
+      "ts": "08:54:47",
+      "ev": "auth_refreshed",
+      "cid": "conn-4",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778766932.808,
+      "ts": "08:55:32",
+      "ev": "keepalive_ping",
+      "cid": "conn-4",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1778766932.863,
+      "ts": "08:55:32",
+      "ev": "auth_refreshed",
+      "cid": "conn-4",
       "d": {
         "action": "PONG"
       }

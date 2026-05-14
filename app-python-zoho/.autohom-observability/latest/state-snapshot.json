@@ -5,5 +5,186 @@
     "pathHash": "sha256:0bc607bcee2e3c7b",
     "parentFolderHash": "sha256:5821094bdd42ed7f"
   },
-  "pdfs": {}
+  "pdfs": {
+    "4918ef08f5960241": {
+      "id": "4918ef08f5960241",
+      "filename": "EDWIN SEBASTIAN RINCON SALAMANCA HOM.pdf",
+      "filepath": {
+        "filename": "EDWIN SEBASTIAN RINCON SALAMANCA HOM.pdf",
+        "extension": ".pdf",
+        "pathHash": "sha256:30cd82be5f05d416",
+        "parentFolderHash": "sha256:6131d564f28b1842"
+      },
+      "status": "completed",
+      "message": "EDWIN SEBASTIAN RINCON SALAMANCA HOM.pdf convertido exitosamente.",
+      "created_at": 1778704449.8846116,
+      "converted_at": 1778704462.5799792,
+      "source": "acta-mapping",
+      "mappingId": 1778704446671,
+      "zohoUrl": {
+        "host": "crm.zoho.com",
+        "path": "/crm/org667027250/tab/Cases/3229357002845191267",
+        "urlHash": "sha256:3981a33da3735a67"
+      },
+      "requestedOutputDirectory": {
+        "filename": "TEAMS",
+        "extension": "",
+        "pathHash": "sha256:6131d564f28b1842",
+        "parentFolderHash": "sha256:1ecdf9f4667c90be"
+      },
+      "directory": {
+        "filename": "TEAMS",
+        "extension": "",
+        "pathHash": "sha256:6131d564f28b1842",
+        "parentFolderHash": "sha256:1ecdf9f4667c90be"
+      },
+      "sizeBytes": 173863,
+      "modifiedAt": 1778704445,
+      "traceId": "acta-single-1778704446671-1778704449850"
+    },
+    "36bfff1d53f1bfb1": {
+      "id": "36bfff1d53f1bfb1",
+      "filename": "JURANNY ALEXANDRA DUQUE PAEZ - CC 1105687619 - ID 100247203 Homologado - VERIFICADO  (1).pdf",
+      "filepath": {
+        "filename": "JURANNY ALEXANDRA DUQUE PAEZ - CC 1105687619 - ID 100247203 Homologado - VERIFICADO  (1).pdf",
+        "extension": ".pdf",
+        "pathHash": "sha256:209a6f2a9cd6fbf3",
+        "parentFolderHash": "sha256:872e3a549fda880d"
+      },
+      "status": "completed",
+      "message": "JURANNY ALEXANDRA DUQUE PAEZ - CC 1105687619 - ID 100247203 Homologado - VERIFICADO  (1).pdf convertido exitosamente.",
+      "created_at": 1778707115.0614727,
+      "converted_at": 1778707129.1281178,
+      "source": "acta-mapping",
+      "mappingId": 1778707038516,
+      "zohoUrl": {
+        "host": "crm.zoho.com",
+        "path": "/crm/org667027250/tab/Cases/3229357002700896734",
+        "urlHash": "sha256:4065b8259fe15a28"
+      },
+      "requestedOutputDirectory": {
+        "filename": "CORREO",
+        "extension": "",
+        "pathHash": "sha256:872e3a549fda880d",
+        "parentFolderHash": "sha256:1ecdf9f4667c90be"
+      },
+      "directory": {
+        "filename": "CORREO",
+        "extension": "",
+        "pathHash": "sha256:872e3a549fda880d",
+        "parentFolderHash": "sha256:1ecdf9f4667c90be"
+      },
+      "sizeBytes": 192049,
+      "modifiedAt": 1778707034,
+      "traceId": "acta-single-1778707038516-1778707115025"
+    },
+    "155e665833359cc5": {
+      "id": "155e665833359cc5",
+      "filename": "DIANA LUCIA ECHEVERRY CASTRILLON - CC 1088289298 - ID 100246239 Homologado (1).pdf",
+      "filepath": {
+        "filename": "DIANA LUCIA ECHEVERRY CASTRILLON - CC 1088289298 - ID 100246239 Homologado (1).pdf",
+        "extension": ".pdf",
+        "pathHash": "sha256:6b7ef59a344c2491",
+        "parentFolderHash": "sha256:872e3a549fda880d"
+      },
+      "status": "completed",
+      "message": "DIANA LUCIA ECHEVERRY CASTRILLON - CC 1088289298 - ID 100246239 Homologado (1).pdf convertido exitosamente.",
+      "created_at": 1778707132.9342847,
+      "converted_at": 1778707145.7221527,
+      "source": "acta-mapping",
+      "mappingId": 1778707014236,
+      "zohoUrl": {
+        "host": "crm.zoho.com",
+        "path": "/crm/org667027250/tab/Cases/3229357002681321109",
+        "urlHash": "sha256:db4097c00e6916f9"
+      },
+      "requestedOutputDirectory": {
+        "filename": "CORREO",
+        "extension": "",
+        "pathHash": "sha256:872e3a549fda880d",
+        "parentFolderHash": "sha256:1ecdf9f4667c90be"
+      },
+      "directory": {
+        "filename": "CORREO",
+        "extension": "",
+        "pathHash": "sha256:872e3a549fda880d",
+        "parentFolderHash": "sha256:1ecdf9f4667c90be"
+      },
+      "sizeBytes": 189484,
+      "modifiedAt": 1778707012,
+      "traceId": "acta-single-1778707014236-1778707132841"
+    },
+    "f9dcc43b0d56902d": {
+      "id": "f9dcc43b0d56902d",
+      "filename": "REHENALS BELLO JAIRO LUIS CC 1073827233 ID 100142679.pdf",
+      "filepath": {
+        "filename": "REHENALS BELLO JAIRO LUIS CC 1073827233 ID 100142679.pdf",
+        "extension": ".pdf",
+        "pathHash": "sha256:2ebb7bda68b2c43e",
+        "parentFolderHash": "sha256:872e3a549fda880d"
+      },
+      "status": "completed",
+      "message": "REHENALS BELLO JAIRO LUIS CC 1073827233 ID 100142679.pdf convertido exitosamente.",
+      "created_at": 1778707150.4320545,
+      "converted_at": 1778707162.5457368,
+      "source": "acta-mapping",
+      "mappingId": 1778706983116,
+      "zohoUrl": {
+        "host": "crm.zoho.com",
+        "path": "/crm/org667027250/tab/Cases/3229357002665551176",
+        "urlHash": "sha256:917bf3c84ece8dc0"
+      },
+      "requestedOutputDirectory": {
+        "filename": "CORREO",
+        "extension": "",
+        "pathHash": "sha256:872e3a549fda880d",
+        "parentFolderHash": "sha256:1ecdf9f4667c90be"
+      },
+      "directory": {
+        "filename": "CORREO",
+        "extension": "",
+        "pathHash": "sha256:872e3a549fda880d",
+        "parentFolderHash": "sha256:1ecdf9f4667c90be"
+      },
+      "sizeBytes": 177899,
+      "modifiedAt": 1778706981,
+      "traceId": "acta-single-1778706983116-1778707150410"
+    },
+    "2ccc04507f6a6133": {
+      "id": "2ccc04507f6a6133",
+      "filename": "NICOLAS SANTIAGO RIAÑO LEGUIZAMON - CC 1031809421 - ID 100247765 - Homologado - VERIFICADO.pdf",
+      "filepath": {
+        "filename": "NICOLAS SANTIAGO RIAÑO LEGUIZAMON - CC 1031809421 - ID 100247765 - Homologado - VERIFICADO.pdf",
+        "extension": ".pdf",
+        "pathHash": "sha256:e5e0c7b4c8304cf2",
+        "parentFolderHash": "sha256:872e3a549fda880d"
+      },
+      "status": "completed",
+      "message": "NICOLAS SANTIAGO RIAÑO LEGUIZAMON - CC 1031809421 - ID 100247765 - Homologado - VERIFICADO.pdf convertido exitosamente.",
+      "created_at": 1778707165.6925707,
+      "converted_at": 1778707178.0473115,
+      "source": "acta-mapping",
+      "mappingId": 1778706957171,
+      "zohoUrl": {
+        "host": "crm.zoho.com",
+        "path": "/crm/org667027250/tab/Cases/3229357002708115806",
+        "urlHash": "sha256:4a4a9f75b4508ea9"
+      },
+      "requestedOutputDirectory": {
+        "filename": "CORREO",
+        "extension": "",
+        "pathHash": "sha256:872e3a549fda880d",
+        "parentFolderHash": "sha256:1ecdf9f4667c90be"
+      },
+      "directory": {
+        "filename": "CORREO",
+        "extension": "",
+        "pathHash": "sha256:872e3a549fda880d",
+        "parentFolderHash": "sha256:1ecdf9f4667c90be"
+      },
+      "sizeBytes": 193724,
+      "modifiedAt": 1778706957,
+      "traceId": "acta-single-1778706957171-1778707165673"
+    }
+  }
 }

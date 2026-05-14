@@ -8,6 +8,10 @@ window.AutohomAutomatizarLoteStore = (() => {
     lastError: '',
     lastStatusLevel: 'info',
     lastStatusMessage: 'Esperando configuracion...',
+    presets: [],
+    selectedPresetId: '',
+    presetsLoaded: false,
+    presetsError: '',
   };
 
   function getState() {
@@ -41,6 +45,48 @@ window.AutohomAutomatizarLoteStore = (() => {
     state.lastStatusLevel = level || 'info';
   }
 
+  function setPresets(presets) {
+    state.presets = Array.isArray(presets) ? presets.map((preset) => ({ ...preset })) : [];
+    state.presetsLoaded = true;
+    state.presetsError = '';
+  }
+
+  function setSelectedPresetId(presetId) {
+    state.selectedPresetId = String(presetId || '');
+  }
+
+  function setPresetsError(error) {
+    state.presetsError = String(error || '');
+    state.presetsLoaded = true;
+  }
+
+  function getPresetById(presetId) {
+    return state.presets.find((preset) => preset.id === presetId) || null;
+  }
+
+  function upsertPresetInMemory(preset) {
+    if (!preset || !preset.id) {
+      return;
+    }
+
+    const index = state.presets.findIndex((item) => item.id === preset.id);
+    if (index === -1) {
+      state.presets = [...state.presets, { ...preset }];
+      return;
+    }
+
+    state.presets = state.presets.map((item, itemIndex) =>
+      itemIndex === index ? { ...preset } : item
+    );
+  }
+
+  function removePresetFromMemory(presetId) {
+    state.presets = state.presets.filter((preset) => preset.id !== presetId);
+    if (state.selectedPresetId === presetId) {
+      state.selectedPresetId = '';
+    }
+  }
+
   function reset() {
     state.isRunning = false;
     state.lastRunId = '';
@@ -59,6 +105,12 @@ window.AutohomAutomatizarLoteStore = (() => {
     setProgress,
     setError,
     setStatusLevel,
+    setPresets,
+    setSelectedPresetId,
+    setPresetsError,
+    getPresetById,
+    upsertPresetInMemory,
+    removePresetFromMemory,
     reset,
   };
 })();

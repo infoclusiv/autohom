@@ -33,3 +33,6 @@ The background router emits `ILOVEPDF_SELECTOR_ALERT`; the modularized Alerts mo
 
 ## 10. Side panel bootstrap
 `sidepanel/bootstrap.js` initializes tabs, Actas, Conversor, and Alerts, then registers the runtime message listener and restores pending download confirmations from session storage.
+
+## 11. Automatizar lote preset execution
+The side panel loads saved automation batch presets from `chrome.storage.local`. When the user runs a preset, the controller validates the stored config through `AutohomAutomatizarLoteContracts`, writes it to the visible form for traceability, and reuses the normal `AUTO_BATCH_RUN` flow. Preset usage metadata such as `runCount` and `lastRunAt` is persisted after execution is requested.

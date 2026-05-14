@@ -244,6 +244,82 @@
       border: 1px solid var(--border);
       border-radius: 8px;
     }
+    .automate-lote-presets {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .automate-lote-preset-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .automate-lote-presets-header {
+      margin-top: 12px;
+      margin-bottom: 8px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .auto-batch-presets-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .auto-batch-preset-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      padding: 10px;
+    }
+    .auto-batch-preset-card.is-selected {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .auto-batch-preset-name {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .auto-batch-preset-meta {
+      font-size: 9px;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-muted);
+      line-height: 1.4;
+      word-break: break-word;
+    }
+    .auto-batch-preset-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .auto-batch-preset-btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-size: 10px;
+      font-family: 'DM Mono', monospace;
+      cursor: pointer;
+    }
+    .auto-batch-preset-btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .auto-batch-preset-btn.danger {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+    .is-hidden {
+      display: none;
+    }
 
     /* ═══ CONVERSOR TAB ══════════════════════════════════════════════════ */
 
@@ -484,6 +560,39 @@
         <div id="auto-batch-status" class="automate-lote-status">
           Esperando configuracion...
         </div>
+        <div class="automate-lote-presets">
+          <div class="automate-lote-field">
+            <label for="auto-batch-preset-name">Nombre de configuracion</label>
+            <input
+              id="auto-batch-preset-name"
+              class="automate-lote-input"
+              type="text"
+              placeholder="Ej: Casos homologacion normales"
+              maxlength="60"
+            />
+          </div>
+
+          <div class="automate-lote-preset-actions">
+            <button id="btn-auto-batch-preset-save" class="automate-lote-btn primary">
+              Guardar configuracion
+            </button>
+            <button id="btn-auto-batch-preset-update" class="automate-lote-btn secondary" disabled>
+              Actualizar seleccionada
+            </button>
+          </div>
+
+          <div id="auto-batch-presets-status" class="automate-lote-status is-hidden"></div>
+
+          <div class="automate-lote-presets-header">
+            <span>Configuraciones guardadas</span>
+          </div>
+
+          <div id="auto-batch-presets-empty" class="automate-lote-help">
+            No hay configuraciones guardadas todavia. Completa el formulario y guarda una configuracion.
+          </div>
+
+          <div id="auto-batch-presets-list" class="auto-batch-presets-list"></div>
+        </div>
       </div>
       <div class="automate-lote-help">
         <strong>Uso recomendado:</strong>
@@ -617,6 +726,7 @@
   <script src="sidepanel/tabs/tabsController.js"></script>
   <script src="sidepanel/automatizar-lote/automatizarLoteContracts.js"></script>
   <script src="sidepanel/automatizar-lote/automatizarLoteStore.js"></script>
+  <script src="sidepanel/automatizar-lote/automatizarLotePresetsStorage.js"></script>
   <script src="sidepanel/automatizar-lote/automatizarLoteRender.js"></script>
   <script src="sidepanel/automatizar-lote/automatizarLoteController.js"></script>
 

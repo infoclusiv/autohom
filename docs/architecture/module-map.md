@@ -40,6 +40,9 @@ Side panel bootstrap that wires tabs, modules, runtime messages, and pending-dow
 ### `sidepanel/actas`
 Actas UI module split into store, rendering, CSV export, conversion helpers, and controller.
 
+### `sidepanel/automatizar-lote`
+Automatizar lote UI module split into contracts, in-memory store, rendering, controller, and preset storage. Presets are persisted in `chrome.storage.local` and allow one-click execution of saved batch automation configurations.
+
 ### `sidepanel/actas/actasBatchConversion.js`
 Coordinates batch conversion from the Actas tab by preparing mapped PDFs through `actasConversion.js` and enqueuing them through the existing iLovePDF runtime queue.
 
