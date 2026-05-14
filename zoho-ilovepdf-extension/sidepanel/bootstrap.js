@@ -7,7 +7,14 @@ async function initSidepanel() {
 
   chrome.runtime.onMessage.addListener((message) => {
     if (message.type === 'DOWNLOAD_PENDING') {
-      window.AutohomActas.handlePendingDownload(message);
+      if (message.mode === 'manual' || message.requiresUserConfirmation === true) {
+        window.AutohomActas.handlePendingDownload(message);
+      } else {
+        window.AutohomLogs.append(
+          `actas.mapping.legacy_download_pending_ignored download=${message.downloadId || 'unknown'}`,
+          'warn'
+        );
+      }
     }
     if (message.type === 'MAPPING_SAVED') {
       window.AutohomActas.handleMappingSaved(message.mapping);

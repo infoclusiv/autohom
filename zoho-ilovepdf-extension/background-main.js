@@ -46,6 +46,17 @@ try {
     operation: 'background_main_bootstrap',
     status: 'started',
   });
+  AutohomTelemetry.emit({
+    eventName: AutohomEventNames.ACTAS_MAPPER_IMPLEMENTATION_SELECTED,
+    component: 'extension.service_worker',
+    operation: 'background_main_bootstrap',
+    status: 'succeeded',
+    decision: {
+      mapperImplementation: 'background-zoho.js',
+      mappingMode: 'automatic',
+      legacyPromptEnabled: false,
+    },
+  });
   ILovePDFBridge.connect();
   ILovePDFBridge.setupAlarmReconnect();
   console.log("[iLovePDF] Bridge initialized and alarm reconnect set up.");

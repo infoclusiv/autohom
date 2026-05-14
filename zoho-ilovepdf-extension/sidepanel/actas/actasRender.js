@@ -137,6 +137,8 @@ window.AutohomActasRender = (() => {
   }
 
   function renderPendingSection() {
+    // Manual confirmation UI is disabled by default.
+    // Only explicit legacy/manual flows should call this renderer.
     const section = window.AutohomSidepanelDom.byId('pending-section');
     const pendingItems = window.AutohomActasStore.getPendingItems();
     const keys = Object.keys(pendingItems);

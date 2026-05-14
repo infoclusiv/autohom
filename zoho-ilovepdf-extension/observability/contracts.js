@@ -9,5 +9,21 @@ const AutohomContracts = {
     PING: { expectedResponse: 'PONG' },
     CONVERT_PDF: { expectedResponse: 'CONVERT_PDF_ACK' },
     CONVERSION_STATUS: { source: 'extension.bridge', target: 'python.ws' },
+    MAPPING_SAVED: {
+      required: ['type', 'mapping'],
+      source: 'extension.service_worker',
+      target: 'sidepanel.ui',
+    },
+    MAPPING_AUTO_FAILED: {
+      required: ['type', 'downloadId', 'pendingKey', 'error'],
+      source: 'extension.service_worker',
+      target: 'sidepanel.ui',
+    },
+    DOWNLOAD_PENDING: {
+      required: ['type', 'downloadId', 'pendingKey', 'requiresUserConfirmation'],
+      source: 'extension.service_worker',
+      target: 'sidepanel.ui',
+      allowedOnlyWhen: 'requiresUserConfirmation === true',
+    },
   },
 };

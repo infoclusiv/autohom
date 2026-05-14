@@ -29,6 +29,8 @@ function getPendingKey(downloadId) {
   return `pending_${downloadId}`;
 }
 
+const ACTA_MAPPING_MODE = 'automatic';
+const LEGACY_CONFIRMATION_PROMPT_ENABLED = false;
 const autoMappingInFlight = new Set();
 
 function normalizeFilename(filename) {
@@ -117,6 +119,32 @@ function emitAutoMapTelemetry(eventName, payload = {}) {
   } catch (_error) {}
 }
 
+function emitMappingDecisionTelemetry(downloadItem, pendingKey, filename, zohoUrl, reason) {
+  emitAutoMapTelemetry(AutohomEventNames.ACTAS_MAPPING_DECISION, {
+    operation: 'download_created_mapping_decision',
+    status: 'succeeded',
+    downloadId: downloadItem?.id,
+    pendingKey,
+    filename,
+    zohoUrl,
+    decision: {
+      mappingMode: ACTA_MAPPING_MODE,
+      shouldAskUser: false,
+      shouldAutoMap: true,
+      reason,
+    },
+    expected: {
+      shouldAskUser: false,
+      shouldCreateBrowserNotification: false,
+      shouldRenderPendingQuestion: false,
+    },
+    actual: {
+      willCallAutoMapPendingDownload: true,
+      legacyPromptEnabled: LEGACY_CONFIRMATION_PROMPT_ENABLED,
+    },
+  });
+}
+
 function isSameMapping(existing, pending) {
   const existingDownloadId = existing?.sourcePdf?.downloadId;
   const pendingDownloadId = pending?.sourcePdf?.downloadId || pending?.downloadId;
@@ -176,7 +204,7 @@ async function autoMapPendingDownload(downloadId, pendingKey, context = {}) {
       reason: context.reason || 'unknown',
     });
 
-    return await saveMapping(downloadId, pendingKey, { mode: 'automatic' });
+    return await saveMapping(downloadId, pendingKey, { mode: ACTA_MAPPING_MODE });
   } catch (error) {
     emitAutoMapTelemetry(AutohomEventNames.ACTAS_MAPPING_AUTO_FAILED, {
       operation: 'auto_map_download',
@@ -236,7 +264,24 @@ chrome.downloads.onCreated.addListener(async (downloadItem) => {
     },
   });
 
+  emitMappingDecisionTelemetry(
+    downloadItem,
+    pendingKey,
+    filename,
+    taskUrl,
+    'valid_pdf_download_from_zoho_case'
+  );
+
   enrichPendingDownload(downloadItem.id, pendingKey).catch(() => {});
+  if (LEGACY_CONFIRMATION_PROMPT_ENABLED) {
+    chrome.runtime.sendMessage({
+      type: 'DOWNLOAD_PENDING',
+      downloadId: downloadItem.id,
+      pendingKey,
+      mode: 'manual',
+      requiresUserConfirmation: true,
+    }).catch(() => {});
+  }
   autoMapPendingDownload(downloadItem.id, pendingKey, {
     reason: 'download_created',
   }).catch((error) => {
@@ -300,7 +345,7 @@ async function saveMapping(downloadId, pendingKey, options = {}) {
       zohoUrl: pending.zohoUrl || '',
       sourcePdfPathPresent: Boolean(pending.sourcePdf?.absolutePath),
       duplicateMappingId: duplicate.id,
-      captureMode: options.mode || 'manual',
+      captureMode: options.mode || ACTA_MAPPING_MODE,
     });
     chrome.runtime.sendMessage({
       type: 'MAPPING_SAVED',
@@ -323,7 +368,7 @@ async function saveMapping(downloadId, pendingKey, options = {}) {
       lastError: null,
       updatedAt: null,
     },
-    captureMode: options.mode || 'manual',
+    captureMode: options.mode || ACTA_MAPPING_MODE,
     schemaVersion: 2,
   };
 
@@ -355,7 +400,9 @@ async function saveMapping(downloadId, pendingKey, options = {}) {
 chrome.runtime.onMessage.addListener(async (message) => {
   if (message.type === 'CONFIRM_MAPPING') {
     try {
-      await saveMapping(message.downloadId, message.pendingKey);
+      await saveMapping(message.downloadId, message.pendingKey, {
+        mode: message.auto === true ? ACTA_MAPPING_MODE : 'manual',
+      });
       return Promise.resolve({ ok: true });
     } catch (error) {
       return Promise.resolve({ ok: false, error: error.message || 'No se pudo guardar el mapeo.' });

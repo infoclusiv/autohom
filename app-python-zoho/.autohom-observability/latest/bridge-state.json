@@ -6,79 +6,169 @@
   "last_error": null,
   "host": "localhost",
   "port": 8769,
-  "last_seen": 1778776806.5783691,
+  "last_seen": 1778790232.114678,
   "running": true,
-  "connectionId": "conn-1",
-  "lastSeenSecondsAgo": 13.8,
+  "connectionId": "conn-20",
+  "lastSeenSecondsAgo": 41.2,
   "recentEvents": [
     {
-      "t": 1778776716.38,
-      "ts": "11:38:36",
+      "t": 1778789983.623,
+      "ts": "15:19:43",
+      "ev": "keepalive_ping",
+      "cid": "conn-18",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1778789983.678,
+      "ts": "15:19:43",
+      "ev": "auth_refreshed",
+      "cid": "conn-18",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778790020.514,
+      "ts": "15:20:20",
       "ev": "ws_handler_start",
-      "cid": "conn-1"
+      "cid": "conn-19"
     },
     {
-      "t": 1778776716.398,
-      "ts": "11:38:36",
+      "t": 1778790020.541,
+      "ts": "15:20:20",
       "ev": "bootstrap_ping_sent",
-      "cid": "conn-1"
+      "cid": "conn-19"
     },
     {
-      "t": 1778776716.423,
-      "ts": "11:38:36",
+      "t": 1778790020.565,
+      "ts": "15:20:20",
       "ev": "auth_promoted",
-      "cid": "conn-1",
+      "cid": "conn-19",
       "d": {
         "replacing": "False"
       }
     },
     {
-      "t": 1778776716.434,
-      "ts": "11:38:36",
+      "t": 1778790020.577,
+      "ts": "15:20:20",
       "ev": "bootstrap_ok",
-      "cid": "conn-1"
+      "cid": "conn-19"
     },
     {
-      "t": 1778776716.452,
-      "ts": "11:38:36",
+      "t": 1778790020.594,
+      "ts": "15:20:20",
       "ev": "auth_refreshed",
-      "cid": "conn-1",
+      "cid": "conn-19",
       "d": {
         "action": "PONG"
       }
     },
     {
-      "t": 1778776761.457,
-      "ts": "11:39:21",
-      "ev": "keepalive_ping",
-      "cid": "conn-1",
+      "t": 1778790051.406,
+      "ts": "15:20:51",
+      "ev": "ws_handler_start",
+      "cid": "conn-20"
+    },
+    {
+      "t": 1778790051.698,
+      "ts": "15:20:51",
+      "ev": "bootstrap_ping_sent",
+      "cid": "conn-20"
+    },
+    {
+      "t": 1778790051.737,
+      "ts": "15:20:51",
+      "ev": "auth_promoted",
+      "cid": "conn-20",
       "d": {
-        "stale_s": "45.0"
+        "replacing": "False"
       }
     },
     {
-      "t": 1778776761.517,
-      "ts": "11:39:21",
+      "t": 1778790051.751,
+      "ts": "15:20:51",
+      "ev": "bootstrap_ok",
+      "cid": "conn-20"
+    },
+    {
+      "t": 1778790051.774,
+      "ts": "15:20:51",
       "ev": "auth_refreshed",
-      "cid": "conn-1",
+      "cid": "conn-20",
       "d": {
         "action": "PONG"
       }
     },
     {
-      "t": 1778776806.555,
-      "ts": "11:40:06",
+      "t": 1778790096.782,
+      "ts": "15:21:36",
       "ev": "keepalive_ping",
-      "cid": "conn-1",
+      "cid": "conn-20",
       "d": {
         "stale_s": "45.0"
       }
     },
     {
-      "t": 1778776806.578,
-      "ts": "11:40:06",
+      "t": 1778790096.821,
+      "ts": "15:21:36",
       "ev": "auth_refreshed",
-      "cid": "conn-1",
+      "cid": "conn-20",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778790141.878,
+      "ts": "15:22:21",
+      "ev": "keepalive_ping",
+      "cid": "conn-20",
+      "d": {
+        "stale_s": "45.1"
+      }
+    },
+    {
+      "t": 1778790141.915,
+      "ts": "15:22:21",
+      "ev": "auth_refreshed",
+      "cid": "conn-20",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778790186.948,
+      "ts": "15:23:06",
+      "ev": "keepalive_ping",
+      "cid": "conn-20",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1778790186.985,
+      "ts": "15:23:06",
+      "ev": "auth_refreshed",
+      "cid": "conn-20",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1778790232.032,
+      "ts": "15:23:52",
+      "ev": "keepalive_ping",
+      "cid": "conn-20",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1778790232.115,
+      "ts": "15:23:52",
+      "ev": "auth_refreshed",
+      "cid": "conn-20",
       "d": {
         "action": "PONG"
       }

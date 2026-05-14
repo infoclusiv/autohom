@@ -20,6 +20,19 @@ window.AutohomActas = (() => {
     const sessionData = await chrome.storage.session.get(null);
     for (const [key, value] of Object.entries(sessionData)) {
       if (key.startsWith('pending_')) {
+        if (!value?.downloadId) {
+          await chrome.storage.session.remove(key);
+          window.AutohomLogs.append(
+            `actas.mapping.pending_restore_removed_stale key=${key}`,
+            'warn'
+          );
+          continue;
+        }
+
+        window.AutohomLogs.append(
+          `actas.mapping.pending_restore_auto_started key=${key} download=${value.downloadId}`,
+          'info'
+        );
         const response = await window.AutohomChromeMessages.sendRuntimeMessage({
           type: 'CONFIRM_MAPPING',
           downloadId: value.downloadId,
@@ -29,15 +42,38 @@ window.AutohomActas = (() => {
 
         if (!response?.ok) {
           window.AutohomLogs.append(
-            `acta.mapping.pending_restore_failed key=${key} error=${response?.error || 'unknown'}`,
+            `actas.mapping.pending_restore_failed key=${key} error=${response?.error || 'unknown'}`,
             'error'
           );
+          continue;
         }
+
+        window.AutohomLogs.append(
+          `actas.mapping.pending_restore_auto_succeeded key=${key} download=${value.downloadId}`,
+          'info'
+        );
       }
     }
   }
 
   async function handlePendingDownload(message) {
+    if (message.mode !== 'manual' && message.requiresUserConfirmation !== true) {
+      window.AutohomLogs.append(
+        `actas.mapping.prompt_suppressed key=${message.pendingKey || 'unknown'}`,
+        'warn'
+      );
+
+      if (message.downloadId && message.pendingKey) {
+        await window.AutohomChromeMessages.sendRuntimeMessage({
+          type: 'CONFIRM_MAPPING',
+          downloadId: message.downloadId,
+          pendingKey: message.pendingKey,
+          auto: true,
+        });
+      }
+      return;
+    }
+
     let data = message._data;
     if (!data) {
       const result = await chrome.storage.session.get(message.pendingKey);
