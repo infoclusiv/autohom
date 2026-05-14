@@ -29,6 +29,8 @@ function getPendingKey(downloadId) {
   return `pending_${downloadId}`;
 }
 
+const autoMappingInFlight = new Set();
+
 function normalizeFilename(filename) {
   return String(filename || '')
     .split('/')
@@ -105,6 +107,95 @@ async function enrichPendingDownload(downloadId, pendingKey) {
   }
 }
 
+function emitAutoMapTelemetry(eventName, payload = {}) {
+  try {
+    AutohomTelemetry.emit({
+      eventName,
+      component: 'extension.zoho_download_mapper',
+      ...payload,
+    });
+  } catch (_error) {}
+}
+
+function isSameMapping(existing, pending) {
+  const existingDownloadId = existing?.sourcePdf?.downloadId;
+  const pendingDownloadId = pending?.sourcePdf?.downloadId || pending?.downloadId;
+
+  if (existingDownloadId && pendingDownloadId && existingDownloadId === pendingDownloadId) {
+    return true;
+  }
+
+  const existingPath = String(existing?.sourcePdf?.absolutePath || '').toLowerCase();
+  const pendingPath = String(pending?.sourcePdf?.absolutePath || '').toLowerCase();
+  const sameZohoUrl = existing?.zohoUrl && pending?.zohoUrl && existing.zohoUrl === pending.zohoUrl;
+
+  return Boolean(existingPath && pendingPath && existingPath === pendingPath && sameZohoUrl);
+}
+
+async function autoMapPendingDownload(downloadId, pendingKey, context = {}) {
+  if (!downloadId || autoMappingInFlight.has(downloadId)) {
+    return null;
+  }
+
+  autoMappingInFlight.add(downloadId);
+  try {
+    const result = await chrome.storage.session.get(pendingKey);
+    let pending = result[pendingKey];
+    if (!pending) {
+      return null;
+    }
+
+    emitAutoMapTelemetry(AutohomEventNames.ACTAS_MAPPING_AUTO_STARTED, {
+      operation: 'auto_map_download',
+      status: 'started',
+      downloadId,
+      pendingKey,
+      filename: pending.filename || '',
+      zohoUrl: pending.zohoUrl || '',
+      reason: context.reason || 'unknown',
+    });
+
+    if (!pending.sourcePdf?.absolutePath) {
+      const sourcePdf = await getCompletedDownloadMetadata(downloadId);
+      pending = {
+        ...pending,
+        filename: pending.filename || sourcePdf.filename,
+        sourcePdf,
+      };
+      await chrome.storage.session.set({ [pendingKey]: pending });
+    }
+
+    emitAutoMapTelemetry(AutohomEventNames.ACTAS_MAPPING_AUTO_SUCCEEDED, {
+      operation: 'auto_map_download_metadata',
+      status: 'succeeded',
+      downloadId,
+      pendingKey,
+      filename: pending.filename || '',
+      zohoUrl: pending.zohoUrl || '',
+      sourcePdfPathPresent: Boolean(pending.sourcePdf?.absolutePath),
+      reason: context.reason || 'unknown',
+    });
+
+    return await saveMapping(downloadId, pendingKey, { mode: 'automatic' });
+  } catch (error) {
+    emitAutoMapTelemetry(AutohomEventNames.ACTAS_MAPPING_AUTO_FAILED, {
+      operation: 'auto_map_download',
+      level: 'error',
+      status: 'failed',
+      downloadId,
+      pendingKey,
+      reason: context.reason || 'unknown',
+      error: {
+        type: error?.name || 'Error',
+        message: error?.message || String(error),
+      },
+    });
+    throw error;
+  } finally {
+    autoMappingInFlight.delete(downloadId);
+  }
+}
+
 chrome.action.onClicked.addListener((tab) => {
   chrome.sidePanel.open({ tabId: tab.id });
 });
@@ -146,45 +237,15 @@ chrome.downloads.onCreated.addListener(async (downloadItem) => {
   });
 
   enrichPendingDownload(downloadItem.id, pendingKey).catch(() => {});
-
-  chrome.runtime.sendMessage({
-    type: 'DOWNLOAD_PENDING',
-    downloadId: downloadItem.id,
-    pendingKey,
-  }).catch(() => {});
-
-  chrome.notifications.create(`notif_${downloadItem.id}`, {
-    type: 'basic',
-    iconUrl: 'icons/icon48.png',
-    title: 'Es un acta de homologacion?',
-    message: `PDF detectado: ${filename}`,
-    buttons: [
-      { title: 'Si, mapear acta' },
-      { title: 'No, ignorar' },
-    ],
-    requireInteraction: true,
-    priority: 2,
-  });
-
-  chrome.notifications.onButtonClicked.addListener(async function handler(notifId, btnIndex) {
-    if (notifId !== `notif_${downloadItem.id}`) return;
-    chrome.notifications.onButtonClicked.removeListener(handler);
-    chrome.notifications.clear(notifId);
-    if (btnIndex === 0) {
-      try {
-        await saveMapping(downloadItem.id, pendingKey);
-      } catch (error) {
-        chrome.notifications.create(`notif_error_${downloadItem.id}`, {
-          type: 'basic',
-          iconUrl: 'icons/icon48.png',
-          title: 'No se pudo mapear el acta',
-          message: error.message || 'Error desconocido',
-          priority: 2,
-        });
-      }
-    } else {
-      await chrome.storage.session.remove(pendingKey);
-    }
+  autoMapPendingDownload(downloadItem.id, pendingKey, {
+    reason: 'download_created',
+  }).catch((error) => {
+    chrome.runtime.sendMessage({
+      type: 'MAPPING_AUTO_FAILED',
+      downloadId: downloadItem.id,
+      pendingKey,
+      error: error.message || String(error),
+    }).catch(() => {});
   });
 });
 
@@ -192,12 +253,25 @@ chrome.downloads.onChanged.addListener(async (delta) => {
   if (!delta?.id) {
     return;
   }
+  const pendingKey = getPendingKey(delta.id);
   if (delta.state?.current === 'complete' || delta.filename?.current) {
-    await enrichPendingDownload(delta.id, getPendingKey(delta.id));
+    await enrichPendingDownload(delta.id, pendingKey);
+  }
+  if (delta.state?.current === 'complete') {
+    autoMapPendingDownload(delta.id, pendingKey, {
+      reason: 'download_completed',
+    }).catch((error) => {
+      chrome.runtime.sendMessage({
+        type: 'MAPPING_AUTO_FAILED',
+        downloadId: delta.id,
+        pendingKey,
+        error: error.message || String(error),
+      }).catch(() => {});
+    });
   }
 });
 
-async function saveMapping(downloadId, pendingKey) {
+async function saveMapping(downloadId, pendingKey, options = {}) {
   const result = await chrome.storage.session.get(pendingKey);
   let pending = result[pendingKey];
   if (!pending) return null;
@@ -214,6 +288,27 @@ async function saveMapping(downloadId, pendingKey) {
 
   const stored = await chrome.storage.local.get('mappings');
   const mappings = stored.mappings || [];
+  const duplicate = mappings.find((mapping) => isSameMapping(mapping, pending));
+  if (duplicate) {
+    await chrome.storage.session.remove(pendingKey);
+    emitAutoMapTelemetry(AutohomEventNames.ACTAS_MAPPING_DUPLICATE_SKIPPED, {
+      operation: 'save_mapping',
+      status: 'skipped',
+      downloadId,
+      pendingKey,
+      filename: pending.filename || '',
+      zohoUrl: pending.zohoUrl || '',
+      sourcePdfPathPresent: Boolean(pending.sourcePdf?.absolutePath),
+      duplicateMappingId: duplicate.id,
+      captureMode: options.mode || 'manual',
+    });
+    chrome.runtime.sendMessage({
+      type: 'MAPPING_SAVED',
+      mapping: duplicate,
+      duplicate: true,
+    }).catch(() => {});
+    return duplicate;
+  }
 
   const newMapping = {
     id: Date.now(),
@@ -228,6 +323,7 @@ async function saveMapping(downloadId, pendingKey) {
       lastError: null,
       updatedAt: null,
     },
+    captureMode: options.mode || 'manual',
     schemaVersion: 2,
   };
 
@@ -240,6 +336,18 @@ async function saveMapping(downloadId, pendingKey) {
     type: 'MAPPING_SAVED',
     mapping: newMapping,
   }).catch(() => {});
+
+  emitAutoMapTelemetry(AutohomEventNames.ACTAS_MAPPING_AUTO_SUCCEEDED, {
+    operation: 'save_mapping',
+    status: 'succeeded',
+    downloadId,
+    pendingKey,
+    filename: newMapping.filename || '',
+    zohoUrl: newMapping.zohoUrl || '',
+    sourcePdfPathPresent: Boolean(newMapping.sourcePdf?.absolutePath),
+    captureMode: newMapping.captureMode,
+    mappingId: newMapping.id,
+  });
 
   return newMapping;
 }

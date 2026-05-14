@@ -38,6 +38,7 @@
     "lastError": "string|null",
     "updatedAt": 0
   },
+  "captureMode": "automatic|manual",
   "schemaVersion": 2
 }
 ```
@@ -45,6 +46,7 @@
 ## Compatibility rules
 
 - Los mapeos viejos pueden no tener `sourcePdf.absolutePath`.
+- `captureMode` es opcional para compatibilidad. Si no existe, asumir `manual` o `legacy`.
 - Si hay coincidencia unica en `chrome.downloads.search`, el sidepanel recupera y persiste `sourcePdf`.
 - Si no se puede recuperar la ruta, Actas muestra error claro y no depende del escaneo de Conversor.
 - `conversion.lastExcelPath` guarda la ubicacion final del Excel movido junto al PDF original.

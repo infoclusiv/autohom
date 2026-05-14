@@ -193,6 +193,7 @@ window.AutohomActasConversion = (() => {
   return {
     normalizeFilename,
     findPdfByFilename,
+    getSourcePdfForMapping,
     prepareMappingConversion,
     ensureBridgeReady,
     convertMapping,

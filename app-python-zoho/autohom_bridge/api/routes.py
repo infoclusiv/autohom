@@ -28,11 +28,15 @@ async def handle_serve_pdf(request):
     if not filepath or not os.path.isfile(filepath):
         return error_response("File not found on disk", status=404)
 
+    disposition = request.query.get("disposition", "attachment").lower()
+    if disposition not in {"attachment", "inline"}:
+        disposition = "attachment"
+
     return web.FileResponse(
         filepath,
         headers={
             "Content-Type": "application/pdf",
-            "Content-Disposition": f'attachment; filename="{pdf.get("filename", "file.pdf")}"',
+            "Content-Disposition": f'{disposition}; filename="{pdf.get("filename", "file.pdf")}"',
             "Access-Control-Allow-Origin": "*",
         },
     )

@@ -58,6 +58,11 @@ window.AutohomConversorApi = (() => {
     });
   }
 
+  function buildPdfFileUrl(pdfId, options = {}) {
+    const disposition = options.disposition || 'attachment';
+    return `${API_BASE}/pdfs/${encodeURIComponent(pdfId)}/file?disposition=${encodeURIComponent(disposition)}`;
+  }
+
   return {
     getConfig,
     setConfig,
@@ -68,5 +73,6 @@ window.AutohomConversorApi = (() => {
     getRecentObservabilityEvents,
     exportDiagnosticPackage,
     registerLocalPdf,
+    buildPdfFileUrl,
   };
 })();

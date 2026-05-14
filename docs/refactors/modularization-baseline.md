@@ -26,11 +26,13 @@
 5. Convert one PDF
 6. Convert all PDFs
 7. Detect Zoho PDF download
-8. Save mapping
-9. Convert mapping-associated PDF
-10. Export mappings CSV
+8. Auto-map Zoho PDF download without confirmation
+9. Open all downloaded mapped PDFs in browser
+10. Convert mapping-associated PDF
+11. Export mappings CSV
 
 ## Known high-risk files
 - `zoho-ilovepdf-extension/sidepanel.js`
 - `app-python-zoho/http_server.py`
 - `app-python-zoho/websocket_server.py`
+- `zoho-ilovepdf-extension/sidepanel/actas/actasOpenPdfs.js`

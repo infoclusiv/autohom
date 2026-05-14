@@ -80,6 +80,24 @@ The current `autohom` runtime is composed of:
 - Failure modes: invalid file path, serialization mismatch, missing registered PDF
 - Required observability events: `state.pdf.upserted`, `http.request.*`, `workflow.step.*`
 
+### FLOW-015: Auto-map Zoho PDF download
+
+- Trigger: `chrome.downloads.onCreated` or `chrome.downloads.onChanged` completes a PDF download from Zoho CRM
+- Components: `extension.zoho_download_mapper`, `chrome.storage.session`, `chrome.storage.local`
+- Inputs: download id, resolved Zoho case URL, local download metadata
+- Outputs: schema v2 mapping with `sourcePdf.absolutePath`, duplicate skip when repeated events point to the same download
+- Failure modes: missing active Zoho tab, incomplete download metadata, duplicate events, storage failure
+- Required observability events: `actas.mapping.auto_*`, `actas.mapping.duplicate_skipped`
+
+### FLOW-016: Open mapped local PDFs in browser
+
+- Trigger: user presses `Abrir PDFs descargados` in Actas
+- Components: `sidepanel.ui`, `python.http`, `python.pdf_service`
+- Inputs: mapping id, recovered `sourcePdf.absolutePath`, `POST /api/pdfs/register-local`
+- Outputs: browser tabs opened with `GET /api/pdfs/{pdf_id}/file?disposition=inline`
+- Failure modes: missing local file, failed local registration, invalid inline URL, tab creation failure
+- Required observability events: `actas.open_pdfs.*`, `http.request.*`
+
 ### FLOW-012: Finalize iLovePDF Excel download
 
 - Trigger: extension runtime confirms download

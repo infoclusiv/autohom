@@ -3,9 +3,12 @@ window.AutohomActas = (() => {
     await window.AutohomActasStore.loadMappings();
     window.AutohomActasRender.renderMappings(window.AutohomActasStore.getMappings());
     window.AutohomActasBatchConversion?.init();
+    window.AutohomActasOpenPdfs?.init();
+    window.AutohomActasOpenPdfs?.updateButtonState();
 
     window.AutohomSidepanelDom.byId('search').addEventListener('input', () => {
       window.AutohomActasRender.renderMappings(window.AutohomActasStore.filterMappings());
+      window.AutohomActasOpenPdfs?.updateButtonState();
     });
     window.AutohomSidepanelDom.byId('btn-export').addEventListener('click', () => {
       window.AutohomActasCsvExport.exportMappings();
@@ -17,11 +20,19 @@ window.AutohomActas = (() => {
     const sessionData = await chrome.storage.session.get(null);
     for (const [key, value] of Object.entries(sessionData)) {
       if (key.startsWith('pending_')) {
-        await handlePendingDownload({
+        const response = await window.AutohomChromeMessages.sendRuntimeMessage({
+          type: 'CONFIRM_MAPPING',
           downloadId: value.downloadId,
           pendingKey: key,
-          _data: value,
+          auto: true,
         });
+
+        if (!response?.ok) {
+          window.AutohomLogs.append(
+            `acta.mapping.pending_restore_failed key=${key} error=${response?.error || 'unknown'}`,
+            'error'
+          );
+        }
       }
     }
   }
@@ -43,6 +54,7 @@ window.AutohomActas = (() => {
     window.AutohomActasStore.prependMapping(mapping);
     window.AutohomActasRender.renderMappings(window.AutohomActasStore.filterMappings(), mapping.id);
     window.AutohomActasBatchConversion?.updateButtonState();
+    window.AutohomActasOpenPdfs?.updateButtonState();
     window.AutohomToast.show('Acta mapeada correctamente');
   }
 
@@ -60,6 +72,7 @@ window.AutohomActas = (() => {
         window.AutohomSidepanelDom.byId('empty-state').style.display = 'block';
       }
       window.AutohomActasBatchConversion?.updateButtonState();
+      window.AutohomActasOpenPdfs?.updateButtonState();
     }, 300);
   }
 
@@ -80,6 +93,7 @@ window.AutohomActas = (() => {
     window.AutohomActasStore.clearMappings();
     window.AutohomActasRender.renderMappings([]);
     window.AutohomActasBatchConversion?.updateButtonState();
+    window.AutohomActasOpenPdfs?.updateButtonState();
     window.AutohomToast.show('Registros de Actas limpiados');
   }
 

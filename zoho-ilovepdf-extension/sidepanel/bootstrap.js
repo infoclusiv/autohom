@@ -12,6 +12,13 @@ async function initSidepanel() {
     if (message.type === 'MAPPING_SAVED') {
       window.AutohomActas.handleMappingSaved(message.mapping);
     }
+    if (message.type === 'MAPPING_AUTO_FAILED') {
+      window.AutohomLogs.append(
+        `acta.mapping.auto_failed download=${message.downloadId} error=${message.error || 'unknown'}`,
+        'error'
+      );
+      window.AutohomToast.show(`Error al mapear PDF: ${message.error || 'desconocido'}`);
+    }
     if (message.type === 'ILOVEPDF_PROGRESS') {
       window.AutohomConversor.handleProgress(message);
     }

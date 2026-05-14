@@ -85,6 +85,23 @@
       "sizeBytes": 193724,
       "modifiedAt": 1778706957,
       "traceId": "acta-single-1778706957171-1778707165673"
+    },
+    "02280d393aad28f8": {
+      "id": "02280d393aad28f8",
+      "filename": "YANIS MIRLETH MANJARREZ MENDOZA_202653.pdf",
+      "filepath": "C:\\Users\\carlos.medinac\\OneDrive - Grupo Planeta\\HOMOLOGACIONES\\HOMOLOGACIONES 2026\\MAYO\\14 MAYO\\YANIS MIRLETH MANJARREZ MENDOZA_202653.pdf",
+      "status": "pending",
+      "message": "",
+      "created_at": 1778776882.6388602,
+      "converted_at": null,
+      "source": "acta-mapping",
+      "mappingId": 1778776784924,
+      "zohoUrl": "https://crm.zoho.com/crm/org667027250/tab/Cases/3229357002863787987",
+      "requestedOutputDirectory": "C:\\Users\\carlos.medinac\\OneDrive - Grupo Planeta\\HOMOLOGACIONES\\HOMOLOGACIONES 2026\\MAYO\\14 MAYO",
+      "directory": "C:\\Users\\carlos.medinac\\OneDrive - Grupo Planeta\\HOMOLOGACIONES\\HOMOLOGACIONES 2026\\MAYO\\14 MAYO",
+      "sizeBytes": 234989,
+      "modifiedAt": 1778776778,
+      "traceId": "actas-open-pdfs-1778776882611-1778776784924"
     }
   }
 }

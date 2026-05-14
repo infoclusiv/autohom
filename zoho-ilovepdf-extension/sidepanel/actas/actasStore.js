@@ -43,7 +43,12 @@ window.AutohomActasStore = (() => {
   }
 
   function prependMapping(mapping) {
-    state.allMappings.unshift(normalizeMapping(mapping));
+    const normalized = normalizeMapping(mapping);
+    const existingIndex = state.allMappings.findIndex((item) => item.id === normalized.id);
+    if (existingIndex >= 0) {
+      state.allMappings.splice(existingIndex, 1);
+    }
+    state.allMappings.unshift(normalized);
     updateStats();
   }
 

@@ -54,6 +54,8 @@
 
 ## `DOWNLOAD_PENDING`
 
+Legacy compatibility only. The normal Zoho PDF flow now auto-confirms mappings and should not emit this message on successful downloads.
+
 ### Payload
 ```json
 {
@@ -91,8 +93,21 @@
       "lastError": null,
       "updatedAt": null
     },
+    "captureMode": "automatic|manual",
     "schemaVersion": 2
   }
+}
+```
+
+## `MAPPING_AUTO_FAILED`
+
+### Payload
+```json
+{
+  "type": "MAPPING_AUTO_FAILED",
+  "downloadId": 123,
+  "pendingKey": "pending_123",
+  "error": "No se pudo obtener la ruta local del PDF"
 }
 ```
 
@@ -111,6 +126,15 @@
   "traceId": "acta-0-0"
 }
 ```
+
+## `GET /api/pdfs/{pdf_id}/file`
+
+Query param:
+- `disposition=attachment|inline`
+
+Behavior:
+- `attachment` keeps the previous download behavior.
+- `inline` serves the local PDF for in-browser viewing.
 
 ### Response
 ```json

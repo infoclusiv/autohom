@@ -121,9 +121,13 @@
     .btn-delete { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 2px 4px; line-height: 1; border-radius: 4px; transition: all 0.15s; position: absolute; top: 10px; right: 10px; }
     .btn-delete:hover { color: var(--danger); background: var(--danger-soft); }
     .actas-batch-bar { padding: 0 18px 16px; }
+    .btn-actas-open-pdfs { width: 100%; background: var(--surface); color: var(--accent); border: 1px solid var(--accent); border-radius: 8px; padding: 10px; font-size: 12px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; transition: all 0.15s; margin-bottom: 8px; }
+    .btn-actas-open-pdfs:hover { background: var(--accent-soft); transform: translateY(-1px); }
+    .btn-actas-open-pdfs:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
     .btn-actas-convert-all { width: 100%; background: var(--accent); color: white; border: none; border-radius: 8px; padding: 11px; font-size: 13px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; transition: all 0.15s; letter-spacing: 0.3px; }
     .btn-actas-convert-all:hover { filter: brightness(1.1); transform: translateY(-1px); }
     .btn-actas-convert-all:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .actas-open-pdfs-status { margin-top: 6px; margin-bottom: 8px; font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; text-align: center; }
     .actas-batch-status { margin-top: 6px; font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; text-align: center; }
 
     /* EMPTY STATE */
@@ -621,13 +625,15 @@
     </div>
     <div class="mappings-list" id="mappings-list"></div>
     <div class="actas-batch-bar">
+      <button class="btn-actas-open-pdfs" id="btn-actas-open-pdfs" disabled>Abrir PDFs descargados</button>
+      <div class="actas-open-pdfs-status" id="actas-open-pdfs-status">No hay PDFs descargados para abrir</div>
       <button class="btn-actas-convert-all" id="btn-actas-convert-all" disabled>Convertir todos los PDF mapeados</button>
       <div class="actas-batch-status" id="actas-batch-status">No hay PDFs mapeados pendientes para convertir</div>
     </div>
     <div class="empty-state" id="empty-state">
       <div class="empty-icon">🗂️</div>
       <div class="empty-title">Sin registros aún</div>
-      <div class="empty-desc">Cuando descargues un PDF en<br/>Zoho CRM, aparecerá aquí<br/>para confirmar si es un acta.</div>
+      <div class="empty-desc">Cuando descargues un PDF en<br/>Zoho CRM, se mapeará aquí<br/>automáticamente.</div>
     </div>
   </div>
 
@@ -735,9 +741,10 @@
   <script src="sidepanel/actas/csvExport.js"></script>
   <script src="sidepanel/actas/actasConversion.js"></script>
   <script src="sidepanel/actas/actasBatchConversion.js"></script>
+  <script src="sidepanel/conversor/apiClient.js"></script>
+  <script src="sidepanel/actas/actasOpenPdfs.js"></script>
   <script src="sidepanel/actas/actasController.js"></script>
 
-  <script src="sidepanel/conversor/apiClient.js"></script>
   <script src="sidepanel/conversor/pdfStore.js"></script>
   <script src="sidepanel/conversor/pdfRender.js"></script>
   <script src="sidepanel/conversor/bridgeStatus.js"></script>
