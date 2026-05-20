@@ -109,9 +109,16 @@
     .mapping-convert-status.is-error { color: var(--danger); }
     .mapping-convert-status.is-success { color: var(--success); }
     .mapping-convert-status.is-active { color: var(--accent); }
-    .mapping-footer { display: flex; align-items: center; justify-content: space-between; }
+    .mapping-pending-status { min-height: 14px; margin-bottom: 8px; font-size: 9px; font-family: 'DM Mono', monospace; color: var(--text-muted); word-break: break-all; }
+    .mapping-pending-status.is-success { color: var(--success); }
+    .mapping-pending-status.is-error { color: var(--danger); }
+    .mapping-pending-status.is-active { color: var(--pending); }
+    .mapping-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
     .mapping-date { font-size: 9px; color: var(--text-dim); font-family: 'DM Mono', monospace; }
-    .card-actions { display: flex; gap: 6px; align-items: center; }
+    .card-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .btn-pending-mapping { background: var(--pending-soft); border: 1px solid var(--pending); color: var(--pending); border-radius: 5px; padding: 3px 8px; font-size: 9px; cursor: pointer; font-family: 'DM Mono', monospace; transition: all 0.15s; }
+    .btn-pending-mapping:hover { background: rgba(217, 119, 0, 0.14); }
+    .btn-pending-mapping:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-convert-mapping { background: var(--accent-soft); border: 1px solid var(--accent); color: var(--accent); border-radius: 5px; padding: 3px 8px; font-size: 9px; cursor: pointer; font-family: 'DM Mono', monospace; transition: all 0.15s; }
     .btn-convert-mapping:hover { background: var(--accent-glow); }
     .btn-convert-mapping:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -742,6 +749,7 @@
   <script src="sidepanel/actas/actasConversion.js"></script>
   <script src="sidepanel/actas/actasBatchConversion.js"></script>
   <script src="sidepanel/conversor/apiClient.js"></script>
+  <script src="sidepanel/actas/actasPending.js"></script>
   <script src="sidepanel/actas/actasOpenPdfs.js"></script>
   <script src="sidepanel/actas/actasController.js"></script>
 

@@ -46,6 +46,9 @@ Automatizar lote UI module split into contracts, in-memory store, rendering, con
 ### `sidepanel/actas/actasBatchConversion.js`
 Coordinates batch conversion from the Actas tab by preparing mapped PDFs through `actasConversion.js` and enqueuing them through the existing iLovePDF runtime queue.
 
+### `sidepanel/actas/actasPending.js`
+Coordinates the Actas per-card `Pendiente` action by resolving the mapped source PDF, calling the local Python move-to-pending API, and updating mapping storage with the moved path.
+
 ### `sidepanel/conversor`
 PDF converter UI module split into API client, store, rendering, bridge status, and controller.
 

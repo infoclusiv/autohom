@@ -65,3 +65,94 @@ def test_finalize_download_moves_and_suffixes_excel(tmp_path):
 
     assert result["moved"] is True
     assert result["excelPath"].endswith("Acta (1).xlsx")
+
+
+def test_move_pdf_to_pending_creates_folder_and_moves_pdf(tmp_path):
+    service = make_service(tmp_path)
+    pdf_path = tmp_path / "Acta.pdf"
+    pdf_path.write_text("pdf", encoding="utf-8")
+
+    result = service.move_pdf_to_pending(
+        str(pdf_path),
+        mapping_id=123,
+        zoho_url="https://crm.zoho.com/crm/org/tab/Cases/1",
+        trace_id="trace-pending-1",
+    )
+
+    destination = tmp_path / "pendientes" / "Acta.pdf"
+    assert result["moved"] is True
+    assert result["originalPath"] == str(pdf_path.resolve())
+    assert result["destinationPath"] == str(destination.resolve())
+    assert result["pendingDirectory"] == str((tmp_path / "pendientes").resolve())
+    assert result["mappingId"] == 123
+    assert result["traceId"] == "trace-pending-1"
+    assert destination.exists()
+    assert not pdf_path.exists()
+
+
+def test_move_pdf_to_pending_avoids_overwriting_existing_file(tmp_path):
+    service = make_service(tmp_path)
+    pdf_path = tmp_path / "Acta.pdf"
+    pdf_path.write_text("new", encoding="utf-8")
+    pending_dir = tmp_path / "pendientes"
+    pending_dir.mkdir()
+    (pending_dir / "Acta.pdf").write_text("old", encoding="utf-8")
+
+    result = service.move_pdf_to_pending(str(pdf_path))
+
+    assert result["destinationPath"].endswith("Acta (1).pdf")
+    assert (pending_dir / "Acta.pdf").read_text(encoding="utf-8") == "old"
+    assert (pending_dir / "Acta (1).pdf").exists()
+
+
+def test_move_pdf_to_pending_raises_when_pdf_missing(tmp_path):
+    service = make_service(tmp_path)
+
+    missing_path = tmp_path / "missing.pdf"
+
+    try:
+        service.move_pdf_to_pending(str(missing_path))
+        assert False, "Expected FileNotFoundError"
+    except FileNotFoundError:
+        pass
+
+
+def test_move_pdf_to_pending_rejects_non_pdf_path(tmp_path):
+    service = make_service(tmp_path)
+    txt_path = tmp_path / "note.txt"
+    txt_path.write_text("x", encoding="utf-8")
+
+    try:
+        service.move_pdf_to_pending(str(txt_path))
+        assert False, "Expected ValueError"
+    except ValueError as ex:
+        assert ".pdf" in str(ex)
+
+
+def test_move_pdf_to_pending_updates_existing_registered_state(tmp_path):
+    service = make_service(tmp_path)
+    pdf_path = tmp_path / "Acta.pdf"
+    pdf_path.write_text("pdf", encoding="utf-8")
+    saved = service.register_local_pdf(
+        str(pdf_path),
+        mapping_id=123,
+        zoho_url="https://crm.zoho.com/crm/org/tab/Cases/1",
+        requested_output_directory=str(tmp_path),
+        trace_id="trace-register-1",
+    )
+
+    result = service.move_pdf_to_pending(
+        str(pdf_path),
+        mapping_id=123,
+        zoho_url="https://crm.zoho.com/crm/org/tab/Cases/1",
+        trace_id="trace-pending-2",
+    )
+
+    updated = service.state_manager.get_pdf(saved["id"])
+    assert updated is not None
+    assert updated["filepath"] == result["destinationPath"]
+    assert updated["filename"] == "Acta.pdf"
+    assert updated["directory"] == str((tmp_path / "pendientes").resolve())
+    assert updated["requestedOutputDirectory"] == str((tmp_path / "pendientes").resolve())
+    assert updated["mappingId"] == 123
+    assert updated["traceId"] == "trace-pending-2"

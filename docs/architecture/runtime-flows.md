@@ -25,6 +25,8 @@ The Actas tab also exposes a batch conversion action. That action validates the 
 
 The iLovePDF background runtime keeps processing the queue sequentially, and the same progress events continue updating both the Conversor list and the Actas card state.
 
+The Actas tab also exposes a per-card `Pendiente` action. That action resolves the mapped `sourcePdf.absolutePath`, calls `POST /api/pdfs/move-to-pending`, updates `chrome.storage.local.mappings` with the moved path, and preserves the mapping so future open/convert actions use the new location inside `pendientes`.
+
 ## 8. Selector alert
 The background router emits `ILOVEPDF_SELECTOR_ALERT`; the modularized Alerts module renders the warning or error banner and persists dismissal state through local storage.
 

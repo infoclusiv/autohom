@@ -58,6 +58,14 @@ window.AutohomConversorApi = (() => {
     });
   }
 
+  async function movePdfToPending(payload) {
+    return await readJson(`${API_BASE}/pdfs/move-to-pending`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  }
+
   function buildPdfFileUrl(pdfId, options = {}) {
     const disposition = options.disposition || 'attachment';
     return `${API_BASE}/pdfs/${encodeURIComponent(pdfId)}/file?disposition=${encodeURIComponent(disposition)}`;
@@ -73,6 +81,7 @@ window.AutohomConversorApi = (() => {
     getRecentObservabilityEvents,
     exportDiagnosticPackage,
     registerLocalPdf,
+    movePdfToPending,
     buildPdfFileUrl,
   };
 })();

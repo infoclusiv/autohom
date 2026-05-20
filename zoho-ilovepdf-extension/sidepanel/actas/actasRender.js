@@ -14,6 +14,23 @@ window.AutohomActasRender = (() => {
     return { status: 'idle', message: '' };
   }
 
+  function getStoredPendingMoveMessage(mapping) {
+    const pendingMove = mapping?.pendingMove || null;
+    if (pendingMove?.status === 'moved' && pendingMove.destinationPath) {
+      return {
+        status: 'moved',
+        message: `En pendientes: ${pendingMove.destinationPath}`,
+      };
+    }
+    if (pendingMove?.status === 'error' && pendingMove.lastError) {
+      return {
+        status: 'error',
+        message: `Pendiente error: ${pendingMove.lastError}`,
+      };
+    }
+    return { status: 'idle', message: '' };
+  }
+
   function renderMappings(mappings, newId = null) {
     const list = window.AutohomSidepanelDom.byId('mappings-list');
     const empty = window.AutohomSidepanelDom.byId('empty-state');
@@ -69,6 +86,40 @@ window.AutohomActasRender = (() => {
     }
   }
 
+  function applyPendingStatusToCard(card, status, message = '') {
+    const statusEl = card.querySelector('.mapping-pending-status');
+    const button = card.querySelector('.btn-pending-mapping');
+    if (!statusEl) {
+      return;
+    }
+
+    statusEl.textContent = message || '';
+    statusEl.classList.remove('is-error', 'is-success', 'is-active');
+
+    if (status === 'error') {
+      statusEl.classList.add('is-error');
+    } else if (status === 'moved') {
+      statusEl.classList.add('is-success');
+    } else if (status === 'active') {
+      statusEl.classList.add('is-active');
+    }
+
+    if (!button) {
+      return;
+    }
+
+    if (status === 'moved') {
+      button.disabled = true;
+      button.textContent = 'En pendientes';
+    } else if (status === 'active') {
+      button.disabled = true;
+      button.textContent = 'Moviendo...';
+    } else {
+      button.disabled = false;
+      button.textContent = 'Pendiente';
+    }
+  }
+
   function createCard(mapping, isNew = false) {
     const card = document.createElement('div');
     card.className = `mapping-card${isNew ? ' new-entry' : ''}`;
@@ -92,9 +143,11 @@ window.AutohomActasRender = (() => {
       <a class="mapping-url" href="${mapping.zohoUrl}" target="_blank" title="${mapping.zohoUrl}">🔗 ${shortUrl}</a>
       <div class="mapping-convert-status"></div>
       <div class="mapping-convert-meta"></div>
+      <div class="mapping-pending-status"></div>
       <div class="mapping-footer">
         <span class="mapping-date">${dateStr}</span>
         <div class="card-actions">
+          <button class="btn-pending-mapping" data-id="${mapping.id}">Pendiente</button>
           <button class="btn-convert-mapping" data-id="${mapping.id}">Convertir</button>
           <button class="btn-copy" data-url="${mapping.zohoUrl}">Copiar URL</button>
         </div>
@@ -104,6 +157,11 @@ window.AutohomActasRender = (() => {
     card.querySelector('.btn-delete').addEventListener('click', (event) => {
       event.stopPropagation();
       window.AutohomActas.deleteMapping(mapping.id, card);
+    });
+
+    card.querySelector('.btn-pending-mapping').addEventListener('click', async (event) => {
+      event.stopPropagation();
+      await window.AutohomActas.moveMappingToPending(mapping, card);
     });
 
     card.querySelector('.btn-convert-mapping').addEventListener('click', async (event) => {
@@ -128,6 +186,11 @@ window.AutohomActasRender = (() => {
       applyStatusToCard(card, stored.status, stored.message, {
         finalExcelPath: stored.finalExcelPath,
       });
+    }
+
+    const storedPending = getStoredPendingMoveMessage(mapping);
+    if (storedPending.message || storedPending.status === 'moved') {
+      applyPendingStatusToCard(card, storedPending.status, storedPending.message);
     }
 
     if (isNew) {
@@ -209,9 +272,18 @@ window.AutohomActasRender = (() => {
     applyStatusToCard(card, status, message, options);
   }
 
+  function updateMappingPendingStatus(mappingId, status, message = '') {
+    const card = document.querySelector(`.mapping-card[data-id="${mappingId}"]`);
+    if (!card) {
+      return;
+    }
+    applyPendingStatusToCard(card, status, message);
+  }
+
   return {
     renderMappings,
     renderPendingSection,
     updateMappingConversionStatus,
+    updateMappingPendingStatus,
   };
 })();

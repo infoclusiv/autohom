@@ -93,8 +93,9 @@ Legacy compatibility only. The normal Zoho PDF flow now auto-confirms mappings a
       "lastError": null,
       "updatedAt": null
     },
+    "pendingMove": null,
     "captureMode": "automatic|manual",
-    "schemaVersion": 2
+    "schemaVersion": 3
   }
 }
 ```
@@ -126,6 +127,38 @@ Legacy compatibility only. The normal Zoho PDF flow now auto-confirms mappings a
   "traceId": "acta-0-0"
 }
 ```
+
+## `POST /api/pdfs/move-to-pending`
+
+### Request
+```json
+{
+  "path": "C:\\Actas\\Acta.pdf",
+  "mappingId": 123,
+  "zohoUrl": "https://crm.zoho.com/crm/org/tab/Cases/1",
+  "traceId": "acta-pending-123"
+}
+```
+
+### Response
+```json
+{
+  "ok": true,
+  "moved": true,
+  "originalPath": "C:\\Actas\\Acta.pdf",
+  "destinationPath": "C:\\Actas\\pendientes\\Acta.pdf",
+  "pendingDirectory": "C:\\Actas\\pendientes",
+  "filename": "Acta.pdf",
+  "mappingId": 123,
+  "traceId": "acta-pending-123"
+}
+```
+
+### Behavior
+- Creates `pendientes` beside the source PDF if missing.
+- Moves the PDF into that folder.
+- Does not overwrite existing files.
+- Returns explicit error codes for validation, missing file, permission, and move failures.
 
 ## `GET /api/pdfs/{pdf_id}/file`
 

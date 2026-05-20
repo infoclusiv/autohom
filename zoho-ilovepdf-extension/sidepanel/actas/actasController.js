@@ -138,6 +138,14 @@ window.AutohomActas = (() => {
     window.AutohomActasBatchConversion?.updateButtonState();
   }
 
+  async function moveMappingToPending(mapping, card) {
+    const updated = await window.AutohomActasPending.moveMappingToPending(mapping, card);
+    window.AutohomActasRender.renderMappings(window.AutohomActasStore.filterMappings(), updated?.id || mapping.id);
+    window.AutohomActasBatchConversion?.updateButtonState();
+    window.AutohomActasOpenPdfs?.updateButtonState();
+    return updated;
+  }
+
   async function convertMapping(mapping, card) {
     await window.AutohomActasConversion.convertMapping(mapping, card);
   }
@@ -150,6 +158,7 @@ window.AutohomActas = (() => {
     deleteMapping,
     clearAllMappings,
     updateMappingConversionStatus,
+    moveMappingToPending,
     convertMapping,
     convertAllMapped: () => window.AutohomActasBatchConversion?.convertAllMapped(),
   };

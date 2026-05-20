@@ -4,12 +4,30 @@ import os
 import shutil
 import time
 
+from autohom_bridge.observability import event_names
+from autohom_bridge.observability.logger import get_observability
 from autohom_bridge.services.pdf_scanner import scan_folder
 
 
 class PdfService:
     def __init__(self, state_manager):
         self.state_manager = state_manager
+
+    def _emit(self, event_name, *, status="succeeded", level="info", message="", error=None, data=None, actual=None):
+        obs = get_observability()
+        if not obs:
+            return
+        obs.emit(
+            event_name,
+            component="python.pdfs",
+            operation="move_pdf_to_pending",
+            status=status,
+            level=level,
+            message=message,
+            error=error,
+            data=data or {},
+            actual=actual or {},
+        )
 
     def validate_folder(self, folder):
         normalized = str(folder or "").strip()
@@ -83,6 +101,81 @@ class PdfService:
             },
         )
         return saved
+
+    def move_pdf_to_pending(
+        self,
+        path,
+        *,
+        folder_name="pendientes",
+        mapping_id=None,
+        zoho_url=None,
+        trace_id=None,
+    ):
+        requested_path = os.path.abspath(str(path or "").strip()) if str(path or "").strip() else ""
+        self._emit(
+            event_names.PDF_PENDING_MOVE_STARTED,
+            status="started",
+            data={"mappingId": mapping_id, "zohoUrl": zoho_url or "", "traceId": trace_id or ""},
+            actual={"requestedPath": requested_path, "folderName": folder_name or "pendientes"},
+        )
+
+        try:
+            normalized_path = self.validate_pdf_path(path)
+            source_directory = os.path.dirname(normalized_path)
+            pending_directory = os.path.join(source_directory, str(folder_name or "pendientes").strip() or "pendientes")
+            os.makedirs(pending_directory, exist_ok=True)
+
+            filename = os.path.basename(normalized_path)
+            stem, extension = os.path.splitext(filename)
+            destination_path = self._next_available_output_path(pending_directory, stem, extension)
+            shutil.move(normalized_path, destination_path)
+
+            moved_stat = os.stat(destination_path)
+            self.state_manager.update_pdf_path_by_filepath(
+                normalized_path,
+                destination_path,
+                extra_patch={
+                    "mappingId": mapping_id,
+                    "zohoUrl": zoho_url or "",
+                    "traceId": trace_id or "",
+                    "message": "PDF moved to pendientes.",
+                    "status": "pending",
+                },
+            )
+
+            result = {
+                "moved": True,
+                "originalPath": normalized_path,
+                "destinationPath": destination_path,
+                "pendingDirectory": pending_directory,
+                "filename": os.path.basename(destination_path),
+                "mappingId": mapping_id,
+                "zohoUrl": zoho_url or "",
+                "traceId": trace_id or "",
+                "sizeBytes": moved_stat.st_size,
+                "modifiedAt": int(moved_stat.st_mtime),
+            }
+            self._emit(
+                event_names.PDF_PENDING_MOVE_SUCCEEDED,
+                data={"mappingId": mapping_id, "zohoUrl": zoho_url or "", "traceId": trace_id or ""},
+                actual={
+                    "originalPath": normalized_path,
+                    "destinationPath": destination_path,
+                    "pendingDirectory": pending_directory,
+                },
+            )
+            return result
+        except (FileNotFoundError, PermissionError, ValueError, OSError) as ex:
+            self._emit(
+                event_names.PDF_PENDING_MOVE_FAILED,
+                status="failed",
+                level="error" if not isinstance(ex, ValueError) else "warn",
+                message=str(ex),
+                error=ex,
+                data={"mappingId": mapping_id, "zohoUrl": zoho_url or "", "traceId": trace_id or ""},
+                actual={"requestedPath": requested_path, "folderName": folder_name or "pendientes"},
+            )
+            raise
 
     def finalize_download(
         self,

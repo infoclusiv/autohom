@@ -160,6 +160,33 @@ async def handle_register_local_pdf(request):
     return ok_response(pdf=pdf)
 
 
+async def handle_move_pdf_to_pending(request):
+    try:
+        body = await request.json()
+    except Exception:
+        return error_response("Invalid JSON")
+
+    service = PdfService(request.app["state_manager"])
+    try:
+        result = await asyncio.to_thread(
+            service.move_pdf_to_pending,
+            body.get("path"),
+            mapping_id=body.get("mappingId"),
+            zoho_url=body.get("zohoUrl"),
+            trace_id=body.get("traceId"),
+        )
+    except FileNotFoundError as ex:
+        return error_response(str(ex), status=404, code="PDF_PENDING_MOVE_NOT_FOUND")
+    except PermissionError as ex:
+        return error_response(str(ex), status=403, code="PDF_PENDING_MOVE_NOT_ALLOWED")
+    except ValueError as ex:
+        return error_response(str(ex), status=400, code="PDF_PENDING_MOVE_INVALID")
+    except OSError as ex:
+        return error_response(str(ex), status=500, code="PDF_PENDING_MOVE_FAILED")
+
+    return ok_response(**result)
+
+
 async def handle_finalize_download(request):
     try:
         body = await request.json()

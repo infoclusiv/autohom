@@ -6,169 +6,184 @@
   "last_error": null,
   "host": "localhost",
   "port": 8769,
-  "last_seen": 1778790232.114678,
+  "last_seen": 1779242596.9126348,
   "running": true,
-  "connectionId": "conn-20",
-  "lastSeenSecondsAgo": 41.2,
+  "connectionId": "conn-1",
+  "lastSeenSecondsAgo": 42.9,
   "recentEvents": [
     {
-      "t": 1778789983.623,
-      "ts": "15:19:43",
-      "ev": "keepalive_ping",
-      "cid": "conn-18",
-      "d": {
-        "stale_s": "45.0"
-      }
-    },
-    {
-      "t": 1778789983.678,
-      "ts": "15:19:43",
+      "t": 1779242191.641,
+      "ts": "20:56:31",
       "ev": "auth_refreshed",
-      "cid": "conn-18",
+      "cid": "conn-1",
       "d": {
         "action": "PONG"
       }
     },
     {
-      "t": 1778790020.514,
-      "ts": "15:20:20",
-      "ev": "ws_handler_start",
-      "cid": "conn-19"
-    },
-    {
-      "t": 1778790020.541,
-      "ts": "15:20:20",
-      "ev": "bootstrap_ping_sent",
-      "cid": "conn-19"
-    },
-    {
-      "t": 1778790020.565,
-      "ts": "15:20:20",
-      "ev": "auth_promoted",
-      "cid": "conn-19",
-      "d": {
-        "replacing": "False"
-      }
-    },
-    {
-      "t": 1778790020.577,
-      "ts": "15:20:20",
+      "t": 1779242191.644,
+      "ts": "20:56:31",
       "ev": "bootstrap_ok",
-      "cid": "conn-19"
+      "cid": "conn-1"
     },
     {
-      "t": 1778790020.594,
-      "ts": "15:20:20",
-      "ev": "auth_refreshed",
-      "cid": "conn-19",
-      "d": {
-        "action": "PONG"
-      }
-    },
-    {
-      "t": 1778790051.406,
-      "ts": "15:20:51",
-      "ev": "ws_handler_start",
-      "cid": "conn-20"
-    },
-    {
-      "t": 1778790051.698,
-      "ts": "15:20:51",
-      "ev": "bootstrap_ping_sent",
-      "cid": "conn-20"
-    },
-    {
-      "t": 1778790051.737,
-      "ts": "15:20:51",
-      "ev": "auth_promoted",
-      "cid": "conn-20",
-      "d": {
-        "replacing": "False"
-      }
-    },
-    {
-      "t": 1778790051.751,
-      "ts": "15:20:51",
-      "ev": "bootstrap_ok",
-      "cid": "conn-20"
-    },
-    {
-      "t": 1778790051.774,
-      "ts": "15:20:51",
-      "ev": "auth_refreshed",
-      "cid": "conn-20",
-      "d": {
-        "action": "PONG"
-      }
-    },
-    {
-      "t": 1778790096.782,
-      "ts": "15:21:36",
+      "t": 1779242236.649,
+      "ts": "20:57:16",
       "ev": "keepalive_ping",
-      "cid": "conn-20",
+      "cid": "conn-1",
       "d": {
         "stale_s": "45.0"
       }
     },
     {
-      "t": 1778790096.821,
-      "ts": "15:21:36",
+      "t": 1779242236.656,
+      "ts": "20:57:16",
       "ev": "auth_refreshed",
-      "cid": "conn-20",
+      "cid": "conn-1",
       "d": {
         "action": "PONG"
       }
     },
     {
-      "t": 1778790141.878,
-      "ts": "15:22:21",
+      "t": 1779242281.664,
+      "ts": "20:58:01",
       "ev": "keepalive_ping",
-      "cid": "conn-20",
-      "d": {
-        "stale_s": "45.1"
-      }
-    },
-    {
-      "t": 1778790141.915,
-      "ts": "15:22:21",
-      "ev": "auth_refreshed",
-      "cid": "conn-20",
-      "d": {
-        "action": "PONG"
-      }
-    },
-    {
-      "t": 1778790186.948,
-      "ts": "15:23:06",
-      "ev": "keepalive_ping",
-      "cid": "conn-20",
+      "cid": "conn-1",
       "d": {
         "stale_s": "45.0"
       }
     },
     {
-      "t": 1778790186.985,
-      "ts": "15:23:06",
+      "t": 1779242281.671,
+      "ts": "20:58:01",
       "ev": "auth_refreshed",
-      "cid": "conn-20",
+      "cid": "conn-1",
       "d": {
         "action": "PONG"
       }
     },
     {
-      "t": 1778790232.032,
-      "ts": "15:23:52",
+      "t": 1779242326.7,
+      "ts": "20:58:46",
       "ev": "keepalive_ping",
-      "cid": "conn-20",
+      "cid": "conn-1",
       "d": {
         "stale_s": "45.0"
       }
     },
     {
-      "t": 1778790232.115,
-      "ts": "15:23:52",
+      "t": 1779242326.709,
+      "ts": "20:58:46",
       "ev": "auth_refreshed",
-      "cid": "conn-20",
+      "cid": "conn-1",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1779242371.734,
+      "ts": "20:59:31",
+      "ev": "keepalive_ping",
+      "cid": "conn-1",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1779242371.74,
+      "ts": "20:59:31",
+      "ev": "auth_refreshed",
+      "cid": "conn-1",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1779242416.758,
+      "ts": "21:00:16",
+      "ev": "keepalive_ping",
+      "cid": "conn-1",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1779242416.766,
+      "ts": "21:00:16",
+      "ev": "auth_refreshed",
+      "cid": "conn-1",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1779242461.789,
+      "ts": "21:01:01",
+      "ev": "keepalive_ping",
+      "cid": "conn-1",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1779242461.798,
+      "ts": "21:01:01",
+      "ev": "auth_refreshed",
+      "cid": "conn-1",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1779242506.828,
+      "ts": "21:01:46",
+      "ev": "keepalive_ping",
+      "cid": "conn-1",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1779242506.842,
+      "ts": "21:01:46",
+      "ev": "auth_refreshed",
+      "cid": "conn-1",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1779242551.88,
+      "ts": "21:02:31",
+      "ev": "keepalive_ping",
+      "cid": "conn-1",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1779242551.887,
+      "ts": "21:02:31",
+      "ev": "auth_refreshed",
+      "cid": "conn-1",
+      "d": {
+        "action": "PONG"
+      }
+    },
+    {
+      "t": 1779242596.905,
+      "ts": "21:03:16",
+      "ev": "keepalive_ping",
+      "cid": "conn-1",
+      "d": {
+        "stale_s": "45.0"
+      }
+    },
+    {
+      "t": 1779242596.913,
+      "ts": "21:03:16",
+      "ev": "auth_refreshed",
+      "cid": "conn-1",
       "d": {
         "action": "PONG"
       }

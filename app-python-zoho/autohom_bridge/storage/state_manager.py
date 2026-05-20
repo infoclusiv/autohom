@@ -106,6 +106,48 @@ class StateManager:
             )
             return dict(existing)
 
+    def update_pdf_path_by_filepath(self, old_path, new_path, extra_patch=None):
+        normalized_old = os.path.abspath(str(old_path or ""))
+        normalized_new = os.path.abspath(str(new_path or ""))
+        if not normalized_old or not normalized_new:
+            return None
+
+        with self._lock:
+            for pdf_id, pdf in self._state.get("pdfs", {}).items():
+                current_path = os.path.abspath(str(pdf.get("filepath", "") or ""))
+                if current_path != normalized_old:
+                    continue
+
+                try:
+                    stat_result = os.stat(normalized_new)
+                    size_bytes = stat_result.st_size
+                    modified_at = int(stat_result.st_mtime)
+                except OSError:
+                    size_bytes = pdf.get("sizeBytes")
+                    modified_at = pdf.get("modifiedAt")
+
+                patch = {
+                    "filepath": normalized_new,
+                    "filename": os.path.basename(normalized_new),
+                    "directory": os.path.dirname(normalized_new),
+                    "requestedOutputDirectory": os.path.dirname(normalized_new),
+                    "sizeBytes": size_bytes,
+                    "modifiedAt": modified_at,
+                    "message": "PDF path updated.",
+                }
+                if extra_patch:
+                    patch.update(extra_patch)
+
+                pdf.update(patch)
+                self._save()
+                self._emit(
+                    event_names.STATE_PDF_UPSERTED,
+                    data={"pdfId": pdf_id, "filename": pdf.get("filename"), "status": pdf.get("status")},
+                )
+                return dict(pdf)
+
+        return None
+
     def set_pdf_status(self, pdf_id, status, message=""):
         with self._lock:
             pdf = self._state["pdfs"].get(pdf_id)

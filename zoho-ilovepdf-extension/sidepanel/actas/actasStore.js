@@ -20,6 +20,7 @@ window.AutohomActasStore = (() => {
     return {
       ...mapping,
       sourcePdf,
+      pendingMove: mapping?.pendingMove || null,
       conversion: {
         lastStatus,
         lastPdfId: conversion.lastPdfId || null,
@@ -124,7 +125,11 @@ window.AutohomActasStore = (() => {
   }
 
   async function updateMappingSourcePdf(mappingId, sourcePdf) {
-    return await updateMapping(mappingId, { sourcePdf, schemaVersion: 2 });
+    const mapping = state.allMappings.find((item) => item.id === mappingId);
+    return await updateMapping(mappingId, {
+      sourcePdf,
+      schemaVersion: Math.max(mapping?.schemaVersion || 1, 2),
+    });
   }
 
   async function updateMappingConversion(mappingId, patch) {
@@ -139,6 +144,19 @@ window.AutohomActasStore = (() => {
         updatedAt: Date.now(),
       },
       schemaVersion: Math.max(mapping.schemaVersion || 1, 2),
+    });
+  }
+
+  async function updateMappingPendingMove(mappingId, payload) {
+    const mapping = state.allMappings.find((item) => item.id === mappingId);
+    if (!mapping) {
+      return null;
+    }
+
+    return await updateMapping(mappingId, {
+      sourcePdf: payload?.sourcePdf || mapping.sourcePdf || null,
+      pendingMove: payload?.pendingMove || mapping.pendingMove || null,
+      schemaVersion: Math.max(mapping.schemaVersion || 1, 3),
     });
   }
 
@@ -167,6 +185,7 @@ window.AutohomActasStore = (() => {
     clearActaConversion,
     updateMappingSourcePdf,
     updateMappingConversion,
+    updateMappingPendingMove,
     updateStats,
   };
 })();
