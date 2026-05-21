@@ -1,8 +1,0 @@
-{
-  "routes": [
-    "/api/pdfs",
-    "/api/config",
-    "/api/bridge",
-    "/api/observability/*"
-  ]
-}
