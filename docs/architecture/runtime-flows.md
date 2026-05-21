@@ -38,3 +38,6 @@ The background router emits `ILOVEPDF_SELECTOR_ALERT`; the modularized Alerts mo
 
 ## 11. Automatizar lote preset execution
 The side panel loads saved automation batch presets from `chrome.storage.local`. When the user runs a preset, the controller validates the stored config through `AutohomAutomatizarLoteContracts`, writes it to the visible form for traceability, and reuses the normal `AUTO_BATCH_RUN` flow. Preset usage metadata such as `runCount` and `lastRunAt` is persisted after execution is requested.
+
+## 12. Open configured website for mapped Actas
+The Actas tab exposes an open-site action that reads all current mappings from `AutohomActasStore.getMappings()`, validates a persisted target URL from `chrome.storage.local`, and opens one inactive Chrome tab per mapped PDF with `chrome.tabs.create`. This flow is independent from the Python bridge and iLovePDF conversion runtime.

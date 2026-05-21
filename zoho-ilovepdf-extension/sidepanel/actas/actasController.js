@@ -4,11 +4,14 @@ window.AutohomActas = (() => {
     window.AutohomActasRender.renderMappings(window.AutohomActasStore.getMappings());
     window.AutohomActasBatchConversion?.init();
     window.AutohomActasOpenPdfs?.init();
+    await window.AutohomActasOpenSite?.init();
     window.AutohomActasOpenPdfs?.updateButtonState();
+    window.AutohomActasOpenSite?.updateButtonState();
 
     window.AutohomSidepanelDom.byId('search').addEventListener('input', () => {
       window.AutohomActasRender.renderMappings(window.AutohomActasStore.filterMappings());
       window.AutohomActasOpenPdfs?.updateButtonState();
+      window.AutohomActasOpenSite?.updateButtonState();
     });
     window.AutohomSidepanelDom.byId('btn-export').addEventListener('click', () => {
       window.AutohomActasCsvExport.exportMappings();
@@ -91,6 +94,7 @@ window.AutohomActas = (() => {
     window.AutohomActasRender.renderMappings(window.AutohomActasStore.filterMappings(), mapping.id);
     window.AutohomActasBatchConversion?.updateButtonState();
     window.AutohomActasOpenPdfs?.updateButtonState();
+    window.AutohomActasOpenSite?.updateButtonState();
     window.AutohomToast.show('Acta mapeada correctamente');
   }
 
@@ -109,6 +113,7 @@ window.AutohomActas = (() => {
       }
       window.AutohomActasBatchConversion?.updateButtonState();
       window.AutohomActasOpenPdfs?.updateButtonState();
+      window.AutohomActasOpenSite?.updateButtonState();
     }, 300);
   }
 
@@ -130,6 +135,7 @@ window.AutohomActas = (() => {
     window.AutohomActasRender.renderMappings([]);
     window.AutohomActasBatchConversion?.updateButtonState();
     window.AutohomActasOpenPdfs?.updateButtonState();
+    window.AutohomActasOpenSite?.updateButtonState();
     window.AutohomToast.show('Registros de Actas limpiados');
   }
 
@@ -143,6 +149,7 @@ window.AutohomActas = (() => {
     window.AutohomActasRender.renderMappings(window.AutohomActasStore.filterMappings(), updated?.id || mapping.id);
     window.AutohomActasBatchConversion?.updateButtonState();
     window.AutohomActasOpenPdfs?.updateButtonState();
+    window.AutohomActasOpenSite?.updateButtonState();
     return updated;
   }
 

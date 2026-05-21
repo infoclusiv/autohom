@@ -98,6 +98,15 @@ The current `autohom` runtime is composed of:
 - Failure modes: missing local file, failed local registration, invalid inline URL, tab creation failure
 - Required observability events: `actas.open_pdfs.*`, `http.request.*`
 
+### FLOW-017: Open configured website per mapped PDF
+
+- Trigger: user presses `Abrir sitio por cada PDF mapeado` in Actas
+- Components: `sidepanel.ui`, `sidepanel.actas.open_site`, `chrome.tabs`
+- Inputs: mapped PDF count from `AutohomActasStore.getMappings()`, target URL from `chrome.storage.local`
+- Outputs: one inactive browser tab per mapped PDF
+- Failure modes: invalid URL, zero mappings, tab creation failure, excessive tab count cancelled by user
+- Required observability events: `actas.open_site.requested`, `actas.open_site.tab_opened`, `actas.open_site.failed`, `actas.open_site.completed`
+
 ### FLOW-012: Finalize iLovePDF Excel download
 
 - Trigger: extension runtime confirms download

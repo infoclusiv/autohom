@@ -131,6 +131,71 @@
     .btn-actas-open-pdfs { width: 100%; background: var(--surface); color: var(--accent); border: 1px solid var(--accent); border-radius: 8px; padding: 10px; font-size: 12px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; transition: all 0.15s; margin-bottom: 8px; }
     .btn-actas-open-pdfs:hover { background: var(--accent-soft); transform: translateY(-1px); }
     .btn-actas-open-pdfs:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .actas-open-site-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .actas-open-site-field {
+      margin-bottom: 10px;
+    }
+    .actas-open-site-field label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+    .actas-open-site-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 11px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      outline: none;
+    }
+    .actas-open-site-input:focus {
+      border-color: var(--accent);
+    }
+    .btn-actas-open-site {
+      width: 100%;
+      background: var(--surface);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-bottom: 8px;
+    }
+    .btn-actas-open-site:hover {
+      background: var(--accent-soft);
+      transform: translateY(-1px);
+    }
+    .btn-actas-open-site:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .actas-open-site-status {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+      text-align: center;
+      line-height: 1.4;
+    }
     .btn-actas-convert-all { width: 100%; background: var(--accent); color: white; border: none; border-radius: 8px; padding: 11px; font-size: 13px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; transition: all 0.15s; letter-spacing: 0.3px; }
     .btn-actas-convert-all:hover { filter: brightness(1.1); transform: translateY(-1px); }
     .btn-actas-convert-all:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
@@ -634,6 +699,24 @@
     <div class="actas-batch-bar">
       <button class="btn-actas-open-pdfs" id="btn-actas-open-pdfs" disabled>Abrir PDFs descargados</button>
       <div class="actas-open-pdfs-status" id="actas-open-pdfs-status">No hay PDFs descargados para abrir</div>
+      <div class="actas-open-site-card">
+        <div class="actas-open-site-field">
+          <label for="actas-open-site-url">Sitio web a abrir</label>
+          <input
+            id="actas-open-site-url"
+            class="actas-open-site-input"
+            type="url"
+            value="https://chat.deepseek.com"
+            placeholder="https://chat.deepseek.com"
+          />
+        </div>
+        <button class="btn-actas-open-site" id="btn-actas-open-site">
+          Abrir sitio por cada PDF mapeado
+        </button>
+        <div class="actas-open-site-status" id="actas-open-site-status">
+          Configura el sitio web. Se abrira una pestana por cada PDF mapeado.
+        </div>
+      </div>
       <button class="btn-actas-convert-all" id="btn-actas-convert-all" disabled>Convertir todos los PDF mapeados</button>
       <div class="actas-batch-status" id="actas-batch-status">No hay PDFs mapeados pendientes para convertir</div>
     </div>
@@ -748,6 +831,9 @@
   <script src="sidepanel/actas/csvExport.js"></script>
   <script src="sidepanel/actas/actasConversion.js"></script>
   <script src="sidepanel/actas/actasBatchConversion.js"></script>
+  <script src="sidepanel/actas/actasOpenSiteContracts.js"></script>
+  <script src="sidepanel/actas/actasOpenSiteSettings.js"></script>
+  <script src="sidepanel/actas/actasOpenSite.js"></script>
   <script src="sidepanel/conversor/apiClient.js"></script>
   <script src="sidepanel/actas/actasPending.js"></script>
   <script src="sidepanel/actas/actasOpenPdfs.js"></script>
