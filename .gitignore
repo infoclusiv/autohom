@@ -1,3 +1,16 @@
-app-python-zoho/.autohom-observability/
-*.diagnostic.zip
+# Python
 __pycache__/
+*.py[cod]
+*.pyo
+
+# Observability
+app-python-zoho/.autohom-observability/
+
+# Diagnostics
+*.diagnostic.zip
+
+# VSCode
+.vscode/
+
+# Env
+.env
