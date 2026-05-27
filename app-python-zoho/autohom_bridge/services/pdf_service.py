@@ -43,7 +43,8 @@ class PdfService:
 
     def sorted_pdf_list(self, pdfs=None):
         source = pdfs if pdfs is not None else self.state_manager.get_all_pdfs()
-        return sorted(source.values(), key=lambda pdf: pdf.get("filename", ""))
+        normalized = [self._normalize_pdf_metadata(pdf) for pdf in source.values()]
+        return sorted(normalized, key=lambda pdf: pdf.get("filename", ""))
 
     def set_folder_and_scan(self, folder):
         normalized = self.validate_folder(folder)
@@ -195,7 +196,14 @@ class PdfService:
         if not os.path.isfile(downloaded_path):
             raise FileNotFoundError("Downloaded Excel file not found on disk.")
 
-        normalized_target = self.validate_folder(target_directory)
+        normalized_target = str(target_directory or "").strip()
+        if normalized_target:
+            normalized_target = self.validate_folder(normalized_target)
+        elif source_pdf_path:
+            normalized_target = os.path.dirname(self.validate_pdf_path(source_pdf_path))
+        else:
+            raise ValueError("Target directory is required when source PDF path is unavailable.")
+
         original_name = os.path.basename(str(original_pdf_filename or source_pdf_path or downloaded_path))
         stem, _ = os.path.splitext(original_name)
         if not stem:
@@ -237,3 +245,21 @@ class PdfService:
             if not os.path.exists(candidate):
                 return candidate
             index += 1
+
+    def _normalize_pdf_metadata(self, pdf):
+        normalized = dict(pdf)
+        filepath = str(normalized.get("filepath", "") or "").strip()
+        if not filepath:
+            return normalized
+
+        absolute_path = os.path.abspath(filepath)
+        directory = str(normalized.get("directory", "") or "").strip() or os.path.dirname(absolute_path)
+        normalized["filepath"] = absolute_path
+        normalized["directory"] = directory
+
+        if normalized.get("source") == "conversor-scan":
+            normalized["requestedOutputDirectory"] = (
+                str(normalized.get("requestedOutputDirectory", "") or "").strip() or directory
+            )
+
+        return normalized

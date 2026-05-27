@@ -132,9 +132,7 @@ window.AutohomConversor = (() => {
   }
 
   function convertOne(pdfOrId, maybeFilename) {
-    const descriptor = typeof pdfOrId === 'object'
-      ? pdfOrId
-      : { pdfId: pdfOrId, filename: maybeFilename };
+    const descriptor = buildConversionDescriptor(pdfOrId, maybeFilename);
 
     chrome.runtime.sendMessage({
       type: 'ILOVEPDF_CONVERT',
@@ -158,10 +156,75 @@ window.AutohomConversor = (() => {
     }
     chrome.runtime.sendMessage({
       type: 'ILOVEPDF_CONVERT_ALL',
-      pdfs: pending.map((pdf) => ({ pdfId: pdf.id, filename: pdf.filename })),
+      pdfs: pending.map((pdf) => buildConversionDescriptor(pdf)),
     });
     window.AutohomLogs.append(`⚡ Convertir todos: ${pending.length} PDFs en cola`);
     window.AutohomToast.show(`🔄 ${pending.length} PDFs en cola de conversión`);
+  }
+
+  function buildConversionDescriptor(pdfOrId, maybeFilename) {
+    const pdf = resolvePdfForConversion(pdfOrId, maybeFilename);
+    const sourcePdfPath = String(pdf?.sourcePdfPath || pdf?.filepath || '').trim();
+
+    return {
+      pdfId: pdf?.pdfId || pdf?.id || pdfOrId,
+      filename: pdf?.filename || maybeFilename || '',
+      source: pdf?.source || 'conversor-scan',
+      mappingId: pdf?.mappingId || null,
+      outputDirectory: resolveOutputDirectory(pdf, sourcePdfPath),
+      sourcePdfPath: sourcePdfPath || null,
+      traceId: pdf?.traceId || null,
+      batchId: pdf?.batchId || null,
+    };
+  }
+
+  function resolvePdfForConversion(pdfOrId, maybeFilename) {
+    if (pdfOrId && typeof pdfOrId === 'object') {
+      return pdfOrId;
+    }
+
+    const matched = window.AutohomConversorStore.getPdfs().find(
+      (pdf) => pdf.id === pdfOrId || pdf.pdfId === pdfOrId
+    );
+    if (matched) {
+      return matched;
+    }
+
+    return {
+      id: pdfOrId,
+      pdfId: pdfOrId,
+      filename: maybeFilename || '',
+      source: 'conversor-scan',
+    };
+  }
+
+  function resolveOutputDirectory(pdf, filepath) {
+    const explicitOutputDirectory = String(pdf?.outputDirectory || '').trim();
+    if (explicitOutputDirectory) {
+      return explicitOutputDirectory;
+    }
+
+    const requested = String(pdf?.requestedOutputDirectory || '').trim();
+    if (requested) {
+      return requested;
+    }
+
+    const directory = String(pdf?.directory || '').trim();
+    if (directory) {
+      return directory;
+    }
+
+    if (!filepath) {
+      return null;
+    }
+
+    const normalizedPath = filepath.replace(/[\\/]+$/, '');
+    const parts = normalizedPath.split(/[\\/]/);
+    if (parts.length <= 1) {
+      return null;
+    }
+
+    return parts.slice(0, -1).join('\\') || null;
   }
 
   async function clearList() {
@@ -381,6 +444,7 @@ window.AutohomConversor = (() => {
     browseFolder,
     scanFolder,
     refreshPdfs,
+    buildConversionDescriptor,
     convertOne,
     convertAll,
     clearList,

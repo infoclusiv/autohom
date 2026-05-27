@@ -12,6 +12,8 @@ def test_scan_folder_returns_only_pdfs(tmp_path):
 
     results = scan_folder(tmp_path)
     assert [item["filename"] for item in results] == ["a.pdf", "b.PDF"]
+    assert all(item["filepath"] for item in results)
+    assert all(item["directory"] == str(tmp_path.resolve()) for item in results)
 
 
 def test_scan_folder_generates_stable_ids(tmp_path):

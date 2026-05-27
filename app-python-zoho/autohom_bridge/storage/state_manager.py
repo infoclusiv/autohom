@@ -178,12 +178,16 @@ class StateManager:
 
             for pdf_info in scanned_pdfs:
                 pdf_id = pdf_info["id"]
+                filepath = os.path.abspath(str(pdf_info.get("filepath", "") or ""))
+                directory = str(pdf_info.get("directory") or os.path.dirname(filepath) or "")
                 scanned_ids.add(pdf_id)
                 if pdf_id not in existing:
                     existing[pdf_id] = {
                         "id": pdf_id,
                         "filename": pdf_info["filename"],
-                        "filepath": pdf_info["filepath"],
+                        "filepath": filepath,
+                        "directory": directory,
+                        "requestedOutputDirectory": directory,
                         "source": "conversor-scan",
                         "status": "pending",
                         "message": "",
@@ -191,12 +195,20 @@ class StateManager:
                         "converted_at": None,
                     }
                 else:
-                    existing[pdf_id]["filepath"] = pdf_info["filepath"]
+                    existing[pdf_id]["filepath"] = filepath
                     existing[pdf_id]["filename"] = pdf_info["filename"]
-                    existing[pdf_id]["source"] = "conversor-scan"
-                    existing[pdf_id]["status"] = "pending"
-                    existing[pdf_id]["message"] = ""
-                    existing[pdf_id]["converted_at"] = None
+                    if existing[pdf_id].get("source") != "acta-mapping":
+                        existing[pdf_id]["directory"] = directory
+                        existing[pdf_id]["requestedOutputDirectory"] = directory
+                        existing[pdf_id]["source"] = "conversor-scan"
+                        existing[pdf_id]["status"] = "pending"
+                        existing[pdf_id]["message"] = ""
+                        existing[pdf_id]["converted_at"] = None
+                    else:
+                        existing[pdf_id]["directory"] = existing[pdf_id].get("directory") or directory
+                        existing[pdf_id]["requestedOutputDirectory"] = (
+                            existing[pdf_id].get("requestedOutputDirectory") or existing[pdf_id]["directory"]
+                        )
 
             for pdf_id in list(existing.keys()):
                 if existing[pdf_id].get("source") == "acta-mapping":

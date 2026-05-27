@@ -35,15 +35,42 @@ def test_clear_pdfs(tmp_path):
 
 def test_merge_scanned_pdfs_keeps_expected_structure(tmp_path):
     manager = StateManager(state_file=tmp_path / "state.json")
-    scanned = [{"id": "one", "filename": "one.pdf", "filepath": "C:/one.pdf"}]
+    filepath = str((tmp_path / "one.pdf").resolve())
+    scanned = [{"id": "one", "filename": "one.pdf", "filepath": filepath}]
     merged = manager.merge_scanned_pdfs(scanned)
     assert merged["one"]["status"] == "pending"
     assert merged["one"]["filename"] == "one.pdf"
-    assert merged["one"]["filepath"] == "C:/one.pdf"
+    assert merged["one"]["filepath"] == filepath
+    assert merged["one"]["directory"] == str(tmp_path.resolve())
+    assert merged["one"]["requestedOutputDirectory"] == str(tmp_path.resolve())
 
-    manager.upsert_pdf("missing", {"id": "missing", "filename": "old.pdf", "filepath": "C:/old.pdf"})
+    manager.upsert_pdf("missing", {"id": "missing", "filename": "old.pdf", "filepath": str((tmp_path / "old.pdf").resolve())})
     merged = manager.merge_scanned_pdfs(scanned)
     assert merged["missing"]["status"] == "missing"
+
+
+def test_merge_scanned_pdfs_preserves_acta_mapping_source(tmp_path):
+    manager = StateManager(state_file=tmp_path / "state.json")
+    filepath = str((tmp_path / "mapped.pdf").resolve())
+    manager.upsert_pdf(
+        "mapped",
+        {
+            "id": "mapped",
+            "filename": "mapped.pdf",
+            "filepath": filepath,
+            "source": "acta-mapping",
+            "mappingId": 7,
+            "requestedOutputDirectory": "C:/custom-output",
+            "status": "pending",
+        },
+    )
+
+    merged = manager.merge_scanned_pdfs([{"id": "mapped", "filename": "mapped.pdf", "filepath": filepath}])
+
+    assert merged["mapped"]["source"] == "acta-mapping"
+    assert merged["mapped"]["mappingId"] == 7
+    assert merged["mapped"]["directory"] == str(tmp_path.resolve())
+    assert merged["mapped"]["requestedOutputDirectory"] == "C:/custom-output"
 
 
 def test_persists_to_disk(tmp_path):

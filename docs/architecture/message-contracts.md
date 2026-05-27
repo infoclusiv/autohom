@@ -128,6 +128,32 @@ Legacy compatibility only. The normal Zoho PDF flow now auto-confirms mappings a
 }
 ```
 
+Behavior:
+- `outputDirectory` is preferred when present.
+- If `outputDirectory` is missing, the extension finalizer derives the target folder from `sourcePdfPath`.
+- If neither `outputDirectory` nor `sourcePdfPath` is available, finalization fails explicitly instead of leaving the Excel in Chrome Downloads as a silent success.
+
+## `ILOVEPDF_CONVERT_ALL`
+
+### Payload
+```json
+{
+  "type": "ILOVEPDF_CONVERT_ALL",
+  "pdfs": [
+    {
+      "pdfId": "string",
+      "filename": "string",
+      "source": "conversor-scan|acta-mapping",
+      "mappingId": 0,
+      "outputDirectory": "C:\\folder",
+      "sourcePdfPath": "C:\\folder\\Acta.pdf",
+      "traceId": "acta-0-0",
+      "batchId": "actas-batch-0"
+    }
+  ]
+}
+```
+
 ## `POST /api/pdfs/move-to-pending`
 
 ### Request
@@ -177,6 +203,7 @@ Behavior:
     "id": "stable-pdf-id",
     "filename": "Acta.pdf",
     "filepath": "C:\\Downloads\\Acta.pdf",
+    "directory": "C:\\Downloads",
     "status": "pending",
     "source": "acta-mapping",
     "mappingId": 0,
@@ -210,3 +237,8 @@ Behavior:
   "moved": true
 }
 ```
+
+Behavior:
+- `targetDirectory` is used as the primary destination when provided.
+- If `targetDirectory` is empty, the backend derives the destination from `dirname(sourcePdfPath)` after validating that the source PDF still exists.
+- Filename conflicts still use the existing suffix behavior such as `Acta (1).xlsx`.

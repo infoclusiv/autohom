@@ -1,10 +1,10 @@
 const ILovePDFFinalizer = (() => {
   async function finalizeDownload(pdfDescriptor, downloadResult) {
-    if (!pdfDescriptor?.outputDirectory) {
+    const targetDirectory = resolveTargetDirectory(pdfDescriptor);
+    if (!targetDirectory) {
       return {
-        ok: true,
-        skipped: true,
-        reason: 'No outputDirectory provided; leaving file in Chrome default download location.',
+        ok: false,
+        error: 'Target directory missing for finalize-download request.',
         excelPath: downloadResult.filename || null,
       };
     }
@@ -13,8 +13,10 @@ const ILovePDFFinalizer = (() => {
       pdfId: pdfDescriptor.pdfId,
       filename: pdfDescriptor.filename,
       mappingId: pdfDescriptor.mappingId || null,
-      outputDirectory: pdfDescriptor.outputDirectory,
+      outputDirectory: targetDirectory,
       downloadedFilePath: downloadResult.filename || '',
+      sourcePdfPath: pdfDescriptor.sourcePdfPath || null,
+      targetDirectoryStrategy: pdfDescriptor.outputDirectory ? 'descriptor.outputDirectory' : 'sourcePdfPath.parent',
       traceId: pdfDescriptor.traceId || null,
     });
 
@@ -26,7 +28,7 @@ const ILovePDFFinalizer = (() => {
         mappingId: pdfDescriptor.mappingId || null,
         source: pdfDescriptor.source || 'conversor-scan',
         downloadedFilePath: downloadResult.filename,
-        targetDirectory: pdfDescriptor.outputDirectory,
+        targetDirectory,
         sourcePdfPath: pdfDescriptor.sourcePdfPath || null,
         originalPdfFilename: pdfDescriptor.filename,
         traceId: pdfDescriptor.traceId || null,
@@ -34,6 +36,34 @@ const ILovePDFFinalizer = (() => {
     });
 
     return await response.json();
+  }
+
+  function resolveTargetDirectory(pdfDescriptor) {
+    const explicitOutputDirectory = String(pdfDescriptor?.outputDirectory || '').trim();
+    if (explicitOutputDirectory) {
+      return explicitOutputDirectory;
+    }
+
+    return deriveParentDirectory(pdfDescriptor?.sourcePdfPath);
+  }
+
+  function deriveParentDirectory(rawPath) {
+    const normalizedPath = String(rawPath || '').trim().replace(/[\\/]+$/, '');
+    if (!normalizedPath) {
+      return null;
+    }
+
+    const lastSeparatorIndex = Math.max(normalizedPath.lastIndexOf('\\'), normalizedPath.lastIndexOf('/'));
+    if (lastSeparatorIndex < 0) {
+      return null;
+    }
+
+    const parent = normalizedPath.slice(0, lastSeparatorIndex);
+    if (!parent) {
+      return normalizedPath.startsWith('/') ? '/' : null;
+    }
+
+    return /^[A-Za-z]:$/.test(parent) ? `${parent}\\` : parent;
   }
 
   return { finalizeDownload };

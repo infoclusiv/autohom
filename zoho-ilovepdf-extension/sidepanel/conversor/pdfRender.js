@@ -47,7 +47,7 @@ window.AutohomConversorRender = (() => {
       const button = div.querySelector('.btn-convert-one');
       if (button) {
         button.addEventListener('click', () => {
-          window.AutohomConversor.convertOne(pdf.id, pdf.filename);
+          window.AutohomConversor.convertOne(pdf);
         });
       }
       list.appendChild(div);

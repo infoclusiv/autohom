@@ -17,10 +17,12 @@ def scan_folder(folder_path):
             filepath = os.path.join(folder_path, entry)
             if not os.path.isfile(filepath):
                 continue
+            absolute_path = os.path.abspath(filepath)
             results.append({
                 "id": StateManager.make_pdf_id(filepath),
                 "filename": entry,
-                "filepath": os.path.abspath(filepath),
+                "filepath": absolute_path,
+                "directory": os.path.dirname(absolute_path),
             })
     except OSError as ex:
         print(f"[PDFScanner] Error scanning {folder_path}: {ex}")

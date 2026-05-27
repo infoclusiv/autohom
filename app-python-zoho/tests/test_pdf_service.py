@@ -23,6 +23,26 @@ def test_sorted_pdf_list(tmp_path):
     assert [pdf["filename"] for pdf in service.sorted_pdf_list()] == ["a.pdf", "b.pdf"]
 
 
+def test_sorted_pdf_list_normalizes_scanned_pdf_directory_fields(tmp_path):
+    service = make_service(tmp_path)
+    pdf_path = tmp_path / "doc.pdf"
+    pdf_path.write_text("x", encoding="utf-8")
+    service.state_manager.upsert_pdf(
+        "scan-1",
+        {
+            "id": "scan-1",
+            "filename": "doc.pdf",
+            "filepath": str(pdf_path),
+            "source": "conversor-scan",
+        },
+    )
+
+    pdf = service.sorted_pdf_list()[0]
+    assert pdf["filepath"] == str(pdf_path.resolve())
+    assert pdf["directory"] == str(tmp_path.resolve())
+    assert pdf["requestedOutputDirectory"] == str(tmp_path.resolve())
+
+
 def test_clear_pdfs(tmp_path):
     service = make_service(tmp_path)
     service.state_manager.upsert_pdf("a", {"id": "a", "filename": "a.pdf"})
@@ -65,6 +85,41 @@ def test_finalize_download_moves_and_suffixes_excel(tmp_path):
 
     assert result["moved"] is True
     assert result["excelPath"].endswith("Acta (1).xlsx")
+
+
+def test_finalize_download_derives_target_directory_from_source_pdf_path(tmp_path):
+    service = make_service(tmp_path)
+    source_pdf = tmp_path / "Acta.pdf"
+    source_pdf.write_text("pdf", encoding="utf-8")
+    downloaded_dir = tmp_path / "downloads"
+    downloaded_dir.mkdir()
+    downloaded = downloaded_dir / "downloaded.xlsx"
+    downloaded.write_text("sheet", encoding="utf-8")
+
+    result = service.finalize_download(
+        downloaded_file_path=str(downloaded),
+        target_directory="",
+        source_pdf_path=str(source_pdf),
+    )
+
+    assert result["moved"] is True
+    assert result["excelPath"] == str((tmp_path / "Acta.xlsx").resolve())
+
+
+def test_finalize_download_requires_target_or_source_pdf_path(tmp_path):
+    service = make_service(tmp_path)
+    downloaded = tmp_path / "downloaded.xlsx"
+    downloaded.write_text("sheet", encoding="utf-8")
+
+    try:
+        service.finalize_download(
+            downloaded_file_path=str(downloaded),
+            target_directory="",
+            source_pdf_path="",
+        )
+        assert False, "Expected ValueError"
+    except ValueError as ex:
+        assert "Target directory" in str(ex)
 
 
 def test_move_pdf_to_pending_creates_folder_and_moves_pdf(tmp_path):
